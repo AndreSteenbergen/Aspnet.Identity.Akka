@@ -2,6 +2,7 @@
 using Aspnet.Identity.Akka.ActorMessages.User;
 using Aspnet.Identity.Akka.ActorMessages.UserCoordinator;
 using Aspnet.Identity.Akka.Interfaces;
+using Aspnet.Identity.Akka.Model;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;

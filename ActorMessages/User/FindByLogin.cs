@@ -1,4 +1,6 @@
-﻿namespace Aspnet.Identity.Akka.ActorMessages.User
+﻿using Aspnet.Identity.Akka.Model;
+
+namespace Aspnet.Identity.Akka.ActorMessages.User
 {
     class FindByLogin
     {

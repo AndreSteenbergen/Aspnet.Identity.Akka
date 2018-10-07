@@ -5,7 +5,7 @@ namespace Aspnet.Identity.Akka.ActorMessages.User
     class RequestClaims<TKey> : IGetUserProperties
         where TKey : IEquatable<TKey>
     {
-        public RequestTokens(TKey userId)
+        public RequestClaims(TKey userId)
         {
             UserId = userId;
         }

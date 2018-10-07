@@ -1,4 +1,6 @@
-﻿namespace Aspnet.Identity.Akka.Model
+﻿using System.Collections.Generic;
+
+namespace Aspnet.Identity.Akka.Model
 {
     public struct ExternalLogin
     {
@@ -25,7 +27,10 @@
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(LoginProvider, ProviderKey);
+            var hashCode = 1582216818;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(LoginProvider);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ProviderKey);
+            return hashCode;
         }
     }
 }

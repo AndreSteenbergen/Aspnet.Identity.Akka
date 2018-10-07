@@ -79,8 +79,9 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             }
             foreach (var @event in events)
             {
-                persist(@event, e => OnEvent(sender, e));
+                persist(@event, e => OnEvent(ActorRefs.Nobody, e));
             }
+            sender.Tell(IdentityResult.Success);
         }
 
         private bool TestCommand(IUserPropertyChange change, out IEvent e)
@@ -392,7 +393,8 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             if (user.Logins == null)
             {
                 e = new UserLoginInfoAdded(evt.LoginProvider, evt.ProviderDisplayName, evt.ProviderKey);
-            } else
+            }
+            else
             {
                 var login = user.Logins.FirstOrDefault(x => x.LoginProvider.Equals(evt.LoginProvider) && x.ProviderKey.Equals(evt.ProviderKey));
                 if (login == default(ImmutableUserLoginInfo))
@@ -422,7 +424,155 @@ namespace Aspnet.Identity.Akka.ActorHelpers
 
         public virtual void OnEvent(IActorRef sender, IEvent message)
         {
+            switch (message)
+            {
+                case ClaimsAdded evt:
+                    HandleEvent(sender, evt);
+                    return;
+                case UserLoginInfoAdded evt:
+                    HandleEvent(sender, evt);
+                    return;
+                case ClaimsRemoved evt:
+                    HandleEvent(sender, evt);
+                    return;
+                case LoginRemoved evt:
+                    HandleEvent(sender, evt);
+                    return;
+                case TokenRemoved evt:
+                    HandleEvent(sender, evt);
+                    return;
+                case EmailChanged evt:
+                    HandleEvent(sender, evt);
+                    return;
+                case EmailConfirmed evt:
+                    HandleEvent(sender, evt);
+                    return;
+                case LockoutEnabledChanged evt:
+                    HandleEvent(sender, evt);
+                    return;
+                case LockoutEndDateChanged evt:
+                    HandleEvent(sender, evt);
+                    return;
+                case NormalizedEmailChanged evt:
+                    HandleEvent(sender, evt);
+                    return;
+                case PasswordHashChanged evt:
+                    HandleEvent(sender, evt);
+                    return;
+                case PhoneNumberChanged evt:
+                    HandleEvent(sender, evt);
+                    return;
+                case PhoneNumberConfirmed evt:
+                    HandleEvent(sender, evt);
+                    return;
+                case SecurityStampChanged evt:
+                    HandleEvent(sender, evt);
+                    return;
+                case TokenAdded evt:
+                    HandleEvent(sender, evt);
+                    return;
+                case TokenUpdated evt:
+                    HandleEvent(sender, evt);
+                    return;
+                case TwoFactorEnabledChanged evt:
+                    HandleEvent(sender, evt);
+                    return;
+                case UserNameChanged evt:
+                    HandleEvent(sender, evt);
+                    return;
+            }
+        }
 
+        private void HandleEvent(IActorRef sender, UserNameChanged evt)
+        {
+            user.UserName = evt.UserName;
+            //I guess?
+            user.NormalizedUserName = evt.UserName.ToUpperInvariant();
+        }
+
+        private void HandleEvent(IActorRef sender, TwoFactorEnabledChanged evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(IActorRef sender, TokenUpdated evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(IActorRef sender, TokenAdded evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(IActorRef sender, SecurityStampChanged evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(IActorRef sender, PhoneNumberConfirmed evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(IActorRef sender, PhoneNumberChanged evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(IActorRef sender, PasswordHashChanged evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(IActorRef sender, NormalizedEmailChanged evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(IActorRef sender, LockoutEndDateChanged evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(IActorRef sender, LockoutEnabledChanged evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(IActorRef sender, EmailConfirmed evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(IActorRef sender, EmailChanged evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(IActorRef sender, TokenRemoved evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(IActorRef sender, LoginRemoved evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(IActorRef sender, ClaimsRemoved evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(IActorRef sender, UserLoginInfoAdded evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(IActorRef sender, ClaimsAdded evt)
+        {
+            throw new NotImplementedException();
         }
     }
 }

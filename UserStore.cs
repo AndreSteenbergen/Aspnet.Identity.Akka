@@ -286,7 +286,7 @@ namespace Aspnet.Identity.Akka
 
             await EnsureClaimsLoaded(user);
 
-            var claimsToFind = claims.GroupBy(c => c.Type).ToDictionary(x => x.Key, x => x.GroupBy(c => c.Value).Select(c => c.Key).ToHashSet());
+            var claimsToFind = claims.GroupBy(c => c.Type).ToDictionary(x => x.Key, x => new HashSet<string>(x.GroupBy(c => c.Value).Select(c => c.Key)));
             var claimsToDelete = user.Claims.Where(c => claimsToFind.TryGetValue(c.Type, out HashSet<string> hs) && hs.Contains(c.Value)).ToList();
 
             var resultSet = new List<Claim>();
