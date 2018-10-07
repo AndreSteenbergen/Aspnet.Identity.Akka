@@ -22,9 +22,9 @@ namespace Aspnet.Identity.Akka.Actors
             Context.Stop(child);
         }
 
-        private IActorRef CreateChildActor(TUser identityUser)
+        private IActorRef CreateChildActor(TKey identityUser)
         {
-            return Context.ActorOf(Props.Create(() => new UserActor<TKey, TUser>(identityUser)));
+            return Context.ActorOf(Props.Create(() => new UserActor<TKey, TUser>(identityUser, Context.Self)));
         }
 
         protected override void OnReceive(object message)

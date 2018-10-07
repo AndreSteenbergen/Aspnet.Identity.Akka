@@ -12,9 +12,9 @@ namespace Aspnet.Identity.Akka.Actors
     {
         private UserHelper<TKey, TUser> userHelper;
 
-        public UserActor(TUser identityUser)
+        public UserActor(TKey userId, IActorRef coordinator)
         {
-            userHelper = new UserHelper<TKey, TUser>(identityUser);
+            userHelper = new UserHelper<TKey, TUser>(userId, coordinator);
         }
 
         protected override void OnReceive(object message)

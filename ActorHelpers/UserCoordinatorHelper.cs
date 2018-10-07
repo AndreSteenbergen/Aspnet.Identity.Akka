@@ -3,10 +3,8 @@ using Aspnet.Identity.Akka.ActorMessages.User;
 using Aspnet.Identity.Akka.ActorMessages.UserCoordinator;
 using Aspnet.Identity.Akka.Interfaces;
 using Aspnet.Identity.Akka.Model;
-using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Aspnet.Identity.Akka.ActorHelpers
 {
@@ -14,7 +12,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
         where TKey : IEquatable<TKey>
         where TUser : IdentityUser<TKey>
     {
-        public UserCoordinatorHelper(Func<TUser, IActorRef> createUserActor, Action<IActorRef> killUserActor)
+        public UserCoordinatorHelper(Func<TKey, IActorRef> createUserActor, Action<IActorRef> killUserActor)
         {
             this.createUserActor = createUserActor;
             this.killUserActor = killUserActor;
@@ -32,7 +30,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
         private Dictionary<string, TKey> existingEmails = new Dictionary<string, TKey>();
         private Dictionary<ExternalLogin, TKey> existingLogins = new Dictionary<ExternalLogin, TKey>();
 
-        private readonly Func<TUser, IActorRef> createUserActor;
+        private readonly Func<TKey, IActorRef> createUserActor;
         private readonly Action<IActorRef> killUserActor;
 
         private List<Tuple<IActorRef, ICommand, Action<IEvent, Action<IEvent>>>> stash = new List<Tuple<IActorRef, ICommand, Action<IEvent, Action<IEvent>>>>();
@@ -104,49 +102,49 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             }
         }
 
-        private void HandleEvent(IActorRef sender, UserCreated<TKey, TUser> userCreated)
-        {
-            var usr = userCreated.User;
-            var hs = new HashSet<ExternalLogin>(usr.Logins.Select(x => new ExternalLogin(x.LoginProvider, x.ProviderKey)).ToArray());
+        //private void HandleEvent(IActorRef sender, UserCreated<TKey, TUser> userCreated)
+        //{
+        //    var usr = userCreated.User;
+        //    var hs = new HashSet<ExternalLogin>(usr.Logins.Select(x => new ExternalLogin(x.LoginProvider, x.ProviderKey)).ToArray());
 
-            allUserIds.Add(usr.Id);
+        //    allUserIds.Add(usr.Id);
 
-            //just to avoid race conditions
-            existingUsers.Add(usr.Id, new Tuple<string, string, HashSet<ExternalLogin>>(usr.NormalizedUserName, usr.NormalizedEmail, hs));
-            existingUserNames.Add(usr.NormalizedUserName, usr.Id);
-            existingEmails.Add(usr.NormalizedEmail, usr.Id);
-            foreach (var extLogin in hs)
-            {
-                existingLogins.Add(extLogin, usr.Id);
-            }
+        //    //just to avoid race conditions
+        //    existingUsers.Add(usr.Id, new Tuple<string, string, HashSet<ExternalLogin>>(usr.NormalizedUserName, usr.NormalizedEmail, hs));
+        //    existingUserNames.Add(usr.NormalizedUserName, usr.Id);
+        //    existingEmails.Add(usr.NormalizedEmail, usr.Id);
+        //    foreach (var extLogin in hs)
+        //    {
+        //        existingLogins.Add(extLogin, usr.Id);
+        //    }
 
-            userActors[usr.Id] = createUserActor(usr);
+        //    userActors[usr.Id] = createUserActor(usr);
 
-            if (inSync)
-            {
-                sender.Tell(IdentityResult.Success);
-            }
-        }
+        //    if (inSync)
+        //    {
+        //        sender.Tell(IdentityResult.Success);
+        //    }
+        //}
 
-        private void HandleEvent(IActorRef sender, UserDeleted<TKey> userDeleted)
-        {
-            var tuple = existingUsers[userDeleted.UserId];
+        //private void HandleEvent(IActorRef sender, UserDeleted<TKey> userDeleted)
+        //{
+        //    var tuple = existingUsers[userDeleted.UserId];
 
-            //remove indices
-            existingUserNames.Remove(tuple.Item1);
-            existingEmails.Remove(tuple.Item2);
-            foreach (var extLogin in tuple.Item3)
-            {
-                existingLogins.Remove(extLogin);
-            }
-            existingUsers.Remove(userDeleted.UserId);
-            killUserActor(userActors[userDeleted.UserId]);
-            userActors.Remove(userDeleted.UserId);
+        //    //remove indices
+        //    existingUserNames.Remove(tuple.Item1);
+        //    existingEmails.Remove(tuple.Item2);
+        //    foreach (var extLogin in tuple.Item3)
+        //    {
+        //        existingLogins.Remove(extLogin);
+        //    }
+        //    existingUsers.Remove(userDeleted.UserId);
+        //    killUserActor(userActors[userDeleted.UserId]);
+        //    userActors.Remove(userDeleted.UserId);
 
-            if (inSync)
-            {
-                sender.Tell(IdentityResult.Success);
-            }
-        }
+        //    if (inSync)
+        //    {
+        //        sender.Tell(IdentityResult.Success);
+        //    }
+        //}
     }
 }

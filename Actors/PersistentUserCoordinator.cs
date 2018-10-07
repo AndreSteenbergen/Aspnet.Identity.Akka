@@ -26,9 +26,9 @@ namespace Aspnet.Identity.Akka.Actors
             Context.Stop(child);
         }
 
-        private IActorRef CreateChildActor(TUser arg)
+        private IActorRef CreateChildActor(TKey arg)
         {
-            return Context.ActorOf(Props.Create(() => new PersistentUserActor<TKey, TUser>(arg, persistenceId)));
+            return Context.ActorOf(Props.Create(() => new PersistentUserActor<TKey, TUser>(arg, Context.Self, persistenceId)));
         }
 
         protected override void OnReplaySuccess()

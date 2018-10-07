@@ -1,4 +1,5 @@
-﻿using Akka.Persistence;
+﻿using Akka.Actor;
+using Akka.Persistence;
 using Aspnet.Identity.Akka.ActorHelpers;
 using Aspnet.Identity.Akka.Interfaces;
 using System;
@@ -9,18 +10,18 @@ namespace Aspnet.Identity.Akka.Actors
         where TKey : IEquatable<TKey>
         where TUser : IdentityUser<TKey>
     {
-        private readonly TUser identityUser;
+        private readonly TKey userId;
         private readonly string persistenceId;
         private readonly UserHelper<TKey, TUser> userHelper;
 
-        public PersistentUserActor(TUser identityUser, string persistenceId)
+        public PersistentUserActor(TKey userId, IActorRef coordinator, string persistenceId)
         {
-            this.identityUser = identityUser;
+            this.userId = userId;
             this.persistenceId = persistenceId;
-            userHelper = new UserHelper<TKey, TUser>(identityUser);
+            userHelper = new UserHelper<TKey, TUser>(userId, coordinator);
         }
 
-        public override string PersistenceId => $"{persistenceId}-{identityUser.Id}-{identityUser.Id.GetHashCode()}";
+        public override string PersistenceId => $"{persistenceId}-{userId}-{userId.GetHashCode()}";
 
         protected override void OnReplaySuccess()
         {

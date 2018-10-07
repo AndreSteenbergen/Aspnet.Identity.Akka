@@ -16,11 +16,13 @@ namespace Aspnet.Identity.Akka.ActorHelpers
     {
         private bool inSync;
         private List<Tuple<IActorRef, ICommand, Action<IEvent, Action<IEvent>>>> stash = new List<Tuple<IActorRef, ICommand, Action<IEvent, Action<IEvent>>>>();
-        private readonly TUser identityUser;
+        private readonly TKey userId;
+        private readonly IActorRef coordinator;
 
-        public UserHelper(TUser identityUser)
+        public UserHelper(TKey userId, IActorRef coordinator)
         {
-            this.identityUser = identityUser;
+            this.userId = userId;
+            this.coordinator = coordinator;
         }
 
         public virtual void SetInSync(bool inSync)
@@ -486,8 +488,10 @@ namespace Aspnet.Identity.Akka.ActorHelpers
         private void HandleEvent(IActorRef sender, UserNameChanged evt)
         {
             user.UserName = evt.UserName;
-            //I guess?
+            //guess:
             user.NormalizedUserName = evt.UserName.ToUpperInvariant();
+            
+
         }
 
         private void HandleEvent(IActorRef sender, TwoFactorEnabledChanged evt)
