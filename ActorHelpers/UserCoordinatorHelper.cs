@@ -1,6 +1,8 @@
 ﻿using Akka.Actor;
+using Aspnet.Identity.Akka.ActorMessages;
 using Aspnet.Identity.Akka.ActorMessages.User;
 using Aspnet.Identity.Akka.ActorMessages.UserCoordinator;
+using Aspnet.Identity.Akka.Actors;
 using Aspnet.Identity.Akka.Interfaces;
 using Aspnet.Identity.Akka.Model;
 using System;
@@ -12,9 +14,10 @@ namespace Aspnet.Identity.Akka.ActorHelpers
         where TKey : IEquatable<TKey>
         where TUser : IdentityUser<TKey>
     {
-        public UserCoordinatorHelper(Func<TKey, IActorRef> createUserActor, Action<IActorRef> killUserActor)
+        public UserCoordinatorHelper(Func<TKey, IActorRef> createUserActor, Func<IActorContext> getContext)
         {
             this.createUserActor = createUserActor;
+            this.getContext = getContext;
         }
 
         private bool inSync;
@@ -24,12 +27,14 @@ namespace Aspnet.Identity.Akka.ActorHelpers
 
         //just to find users by key, username, email and external login.
         private Dictionary<TKey, Tuple<string, string, HashSet<ExternalLogin>>> existingUsers = new Dictionary<TKey, Tuple<string, string, HashSet<ExternalLogin>>>();
+        private Dictionary<string, TKey> existingIds = new Dictionary<string, TKey>();
         private Dictionary<string, TKey> existingUserNames = new Dictionary<string, TKey>();
         private Dictionary<string, TKey> existingEmails = new Dictionary<string, TKey>();
         private Dictionary<ExternalLogin, TKey> existingLogins = new Dictionary<ExternalLogin, TKey>();
+        private Dictionary<string, Dictionary<string, HashSet<TKey>>> usersByClaims = new Dictionary<string, Dictionary<string, HashSet<TKey>>>();
 
         private readonly Func<TKey, IActorRef> createUserActor;
-
+        private readonly Func<IActorContext> getContext;
         private List<Tuple<IActorRef, ICommand, Action<IEvent, Action<IEvent>>>> stash = new List<Tuple<IActorRef, ICommand, Action<IEvent, Action<IEvent>>>>();
 
         public virtual void SetInSync(bool inSync)
@@ -65,22 +70,109 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                     ForwardUserRequests(req.UserId, req);
                     break;
                 case FindById fbi:
+                    FindById(fbi.UserId, sender);
                     break;
                 case FindByEmail fbe:
+                    FindByEmail(fbe.NormalizedEmail, sender);
                     break;
                 case FindByClaim fbc:
+                    FindByClaim(fbc.Type, fbc.Value, sender);
                     break;
                 case FindByLogin fbl:
+                    FindByLogin(fbl.ExternalLogin, sender);
                     break;
                 case FindByUsername fbu:
+                    FindByUsername(fbu.NormalizedUsername, sender);
                     break;
                 case CreateUser<TKey, TUser> cu:
                     break;
                 case DeleteUser<TKey> du:
                     break;
                 case UpdateUser<TKey, TUser> uu:
+                    //check important field; logins email username etc.
                     break;
             }
+        }
+
+        private void FindByUsername(string normalizedUsername, IActorRef sender)
+        {
+            if (existingUserNames.TryGetValue(normalizedUsername, out TKey key))
+            {
+                if (!userActors.TryGetValue(key, out IActorRef actor))
+                {
+                    userActors[key] = actor = createUserActor(key);
+                }
+                actor.Tell(ReturnDetails.Instance, sender);
+            }
+            sender.Tell(NilMessage.Instance);
+        }
+
+        private void FindByLogin(ExternalLogin external, IActorRef sender)
+        {
+            if (existingLogins.TryGetValue(external, out TKey key))
+            {
+                if (!userActors.TryGetValue(key, out IActorRef actor))
+                {
+                    userActors[key] = actor = createUserActor(key);
+                }
+                actor.Tell(ReturnDetails.Instance, sender);
+            }
+            sender.Tell(NilMessage.Instance);
+        }
+
+        private void FindById(string userId, IActorRef sender)
+        {
+            if (existingIds.TryGetValue(userId, out TKey key))
+            {
+                if (!userActors.TryGetValue(key, out IActorRef actor))
+                {
+                    userActors[key] = actor = createUserActor(key);
+                }
+                actor.Tell(ReturnDetails.Instance, sender);
+            }
+            sender.Tell(NilMessage.Instance);
+        }
+
+        private void FindByEmail(string email, IActorRef sender)
+        {
+            if (existingEmails.TryGetValue(email, out TKey key))
+            {
+                if (!userActors.TryGetValue(key, out IActorRef actor))
+                {
+                    userActors[key] = actor = createUserActor(key);
+                }
+                actor.Tell(ReturnDetails.Instance, sender);
+            }
+            sender.Tell(NilMessage.Instance);
+        }
+
+        private void FindByClaim(string type, string value, IActorRef sender)
+        {
+            //usersByClaims
+            if (usersByClaims.TryGetValue(type, out Dictionary<string, HashSet<TKey>> byType)
+                && byType.TryGetValue(value, out HashSet<TKey> users))
+            {
+                var actors = new List<IActorRef>();
+
+                foreach (var key in users)
+                {
+                    if (!userActors.TryGetValue(key, out IActorRef actor))
+                    {
+                        userActors[key] = actor = createUserActor(key);
+                    }
+
+                    actors.Add(actor);
+                    //actor.Tell(ReturnDetails.Instance, sender);
+                }
+                if (actors.Count > 0)
+                {
+                    var context = getContext();
+                    var aggregator = context.ActorOf(Props.Create(() => new Aggregator<TUser>(actors)));
+                    aggregator.Ask<AggregatedReply<TUser>>(ReturnDetails.Instance).PipeTo(sender);
+                    return;
+                }
+            }
+            sender.Tell(new TUser[0]);
         }
 
         private void ForwardUserRequests(TKey userId, IGetUserProperties req)
@@ -122,50 +214,5 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                     break;
             }
         }
-
-        //private void HandleEvent(IActorRef sender, UserCreated<TKey, TUser> userCreated)
-        //{
-        //    var usr = userCreated.User;
-        //    var hs = new HashSet<ExternalLogin>(usr.Logins.Select(x => new ExternalLogin(x.LoginProvider, x.ProviderKey)).ToArray());
-
-        //    allUserIds.Add(usr.Id);
-
-        //    //just to avoid race conditions
-        //    existingUsers.Add(usr.Id, new Tuple<string, string, HashSet<ExternalLogin>>(usr.NormalizedUserName, usr.NormalizedEmail, hs));
-        //    existingUserNames.Add(usr.NormalizedUserName, usr.Id);
-        //    existingEmails.Add(usr.NormalizedEmail, usr.Id);
-        //    foreach (var extLogin in hs)
-        //    {
-        //        existingLogins.Add(extLogin, usr.Id);
-        //    }
-
-        //    userActors[usr.Id] = createUserActor(usr);
-
-        //    if (inSync)
-        //    {
-        //        sender.Tell(IdentityResult.Success);
-        //    }
-        //}
-
-        //private void HandleEvent(IActorRef sender, UserDeleted<TKey> userDeleted)
-        //{
-        //    var tuple = existingUsers[userDeleted.UserId];
-
-        //    //remove indices
-        //    existingUserNames.Remove(tuple.Item1);
-        //    existingEmails.Remove(tuple.Item2);
-        //    foreach (var extLogin in tuple.Item3)
-        //    {
-        //        existingLogins.Remove(extLogin);
-        //    }
-        //    existingUsers.Remove(userDeleted.UserId);
-        //    killUserActor(userActors[userDeleted.UserId]);
-        //    userActors.Remove(userDeleted.UserId);
-
-        //    if (inSync)
-        //    {
-        //        sender.Tell(IdentityResult.Success);
-        //    }
-        //}
     }
 }

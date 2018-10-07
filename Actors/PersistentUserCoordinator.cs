@@ -18,12 +18,8 @@ namespace Aspnet.Identity.Akka.Actors
         public PersistentUserCoordinator(string persistenceId)
         {
             this.persistenceId = persistenceId;
-            userCoordinatorHelper = new UserCoordinatorHelper<TKey, TUser>(CreateChildActor, KillChildActor);
-        }
-
-        private void KillChildActor(IActorRef child)
-        {
-            Context.Stop(child);
+            var ctx = Context;
+            userCoordinatorHelper = new UserCoordinatorHelper<TKey, TUser>(CreateChildActor, () => ctx);
         }
 
         private IActorRef CreateChildActor(TKey arg)

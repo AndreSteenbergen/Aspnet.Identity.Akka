@@ -60,6 +60,9 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                 case RequestUserLoginInfo<TKey> req:
                     sender.Tell(user?.Logins ?? new ImmutableUserLoginInfo[0]);
                     break;
+                case ReturnDetails req:
+                    sender.Tell(user == null ? (object) NilMessage.Instance : user);
+                    break;
             }
         }
 

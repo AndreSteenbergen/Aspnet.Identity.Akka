@@ -90,24 +90,28 @@ namespace Aspnet.Identity.Akka
             return userCoordinator.Ask<IdentityResult>(new DeleteUser<TKey>(user.Id), cancellationToken);
         }
 
-        public Task<TUser> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
+        public async Task<TUser> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
         {
-            return userCoordinator.Ask<TUser>(new FindByEmail(normalizedEmail));
+            var rst = userCoordinator.Ask<object>(new FindByEmail(normalizedEmail));
+            return rst as TUser;
         }
 
-        public Task<TUser> FindByIdAsync(string userId, CancellationToken cancellationToken)
+        public async Task<TUser> FindByIdAsync(string userId, CancellationToken cancellationToken)
         {
-            return userCoordinator.Ask<TUser>(new FindById(userId));
+            var rst = await userCoordinator.Ask<object>(new FindById(userId));
+            return rst as TUser;
         }
 
-        public Task<TUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken)
+        public async Task<TUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken)
         {
-            return userCoordinator.Ask<TUser>(new FindByLogin(new ExternalLogin(loginProvider, providerKey)));
+            var rst = await userCoordinator.Ask<object>(new FindByLogin(new ExternalLogin(loginProvider, providerKey)));
+            return rst as TUser;
         }
 
-        public Task<TUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
+        public async Task<TUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
         {
-            return userCoordinator.Ask<TUser>(new FindByUsername(normalizedUserName));
+            var rst = await userCoordinator.Ask<object>(new FindByUsername(normalizedUserName));
+            return rst as TUser;
         }
 
         public Task<int> GetAccessFailedCountAsync(TUser user, CancellationToken cancellationToken)
