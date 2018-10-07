@@ -39,7 +39,8 @@ namespace AspNet.Identity.Akka.Test
                 childPersist)));
 
             userCoordinator.Tell(new CreateUser<Guid, TestIdentityUser>(user));
-            Assert.True(ExpectMsg<IdentityResult>().Succeeded);
+            var result = ExpectMsg<IdentityResult>().Succeeded;
+            Assert.True(result);
         }
     }
 }

@@ -193,13 +193,18 @@ namespace Aspnet.Identity.Akka.ActorHelpers
         {
             var usr = cu.User;
             var errors = new List<IdentityError>();
-            if (existingUserNames.ContainsKey(usr.NormalizedUserName)) errors.Add(new IdentityError { Description = "Username already exists" });
-            if (existingUserNames.ContainsKey(usr.UserName.ToUpperInvariant())) errors.Add(new IdentityError { Description = "Username already exists" });
-            if (existingEmails.ContainsKey(usr.NormalizedEmail)) errors.Add(new IdentityError { Description = "Email already exists" });
+            if (!string.IsNullOrEmpty(usr.NormalizedUserName) && existingUserNames.ContainsKey(usr.NormalizedUserName)) errors.Add(new IdentityError { Description = "Username already exists" });
+            if (!string.IsNullOrEmpty(usr.UserName) && existingUserNames.ContainsKey(usr.UserName.ToUpperInvariant())) errors.Add(new IdentityError { Description = "Username already exists" });
+            if (!string.IsNullOrEmpty(usr.NormalizedEmail) && existingEmails.ContainsKey(usr.NormalizedEmail)) errors.Add(new IdentityError { Description = "Email already exists" });
+            if (string.IsNullOrEmpty(usr.NormalizedEmail) && !string.IsNullOrEmpty(usr.Email) && existingEmails.ContainsKey(usr.Email.ToUpperInvariant()))
+                errors.Add(new IdentityError { Description = "Email already exists" });
             if (existingIds.ContainsKey(usr.Id.ToString())) errors.Add(new IdentityError { Description = "UserId already present" });
-            foreach (var login in usr.Logins)
+            if (usr.Logins != null)
             {
-                if (existingLogins.ContainsKey(new ExternalLogin(login.LoginProvider, login.ProviderKey))) errors.Add(new IdentityError { Description = "External login already present" });
+                foreach (var login in usr.Logins)
+                {
+                    if (existingLogins.ContainsKey(new ExternalLogin(login.LoginProvider, login.ProviderKey))) errors.Add(new IdentityError { Description = "External login already present" });
+                }
             }
 
             if (errors.Count > 0)
@@ -469,9 +474,9 @@ namespace Aspnet.Identity.Akka.ActorHelpers
 
         private void HandleEvent(UserCreated<TKey> evt)
         {
-            existingEmails[evt.NormalizedEmail] = evt.UserId;
-            existingUserNames[evt.NormalizedUserName] = evt.UserId;
-            existingUserNames[evt.UserName.ToUpperInvariant()] = evt.UserId;
+            if (!string.IsNullOrEmpty(evt.NormalizedEmail)) existingEmails[evt.NormalizedEmail] = evt.UserId;
+            if (!string.IsNullOrEmpty(evt.NormalizedUserName)) existingUserNames[evt.NormalizedUserName] = evt.UserId;
+            if (!string.IsNullOrEmpty(evt.UserName)) existingUserNames[evt.UserName.ToUpperInvariant()] = evt.UserId;
             existingUserNames[evt.UserId.ToString()] = evt.UserId;
 
             reverseLookup[evt.UserId] = new Tuple<string, string, string, HashSet<ExternalLogin>, HashSet<Claim>>(
