@@ -7,11 +7,11 @@ namespace Aspnet.Identity.Akka.ActorMessages.User
 {
     class ClaimsAdded : IEvent
     {
-        public ClaimsAdded(IEnumerable<Claim> claimsToRemove)
+        public ClaimsAdded(IEnumerable<Claim> claimsToAdd)
         {
-            ClaimsToRemove = claimsToRemove.ToImmutableArray();
+            ClaimsToAdd = claimsToAdd.ToImmutableArray();
         }
 
-        public ImmutableArray<Claim> ClaimsToRemove { get; }
+        public ImmutableArray<Claim> ClaimsToAdd { get; }
     }
 }

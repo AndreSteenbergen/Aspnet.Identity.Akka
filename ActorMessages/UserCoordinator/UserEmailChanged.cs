@@ -6,7 +6,7 @@ namespace Aspnet.Identity.Akka.ActorMessages.UserCoordinator
     class UserEmailChanged<TKey> : IEvent
         where TKey : IEquatable<TKey>
     {
-        public UserEmailChanged(TKey userId, string email, string normalizedEmail)
+        public UserEmailChanged(TKey userId, string email, bool normalizedEmail)
         {
             UserId = userId;
             Email = email;
@@ -15,6 +15,6 @@ namespace Aspnet.Identity.Akka.ActorMessages.UserCoordinator
 
         public TKey UserId { get; }
         public string Email { get; }
-        public string NormalizedEmail { get; }
+        public bool NormalizedEmail { get; }
     }
 }

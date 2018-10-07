@@ -15,7 +15,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
         where TUser : IdentityUser<TKey>
     {
         private bool inSync;
-        private List<Tuple<IActorRef, ICommand, Action<IEvent, Action<IEvent>>>> stash = new List<Tuple<IActorRef, ICommand, Action<IEvent, Action<IEvent>>>>();
+        private readonly List<Tuple<IActorRef, ICommand, Action<IEvent, Action<IEvent>>>> stash = new List<Tuple<IActorRef, ICommand, Action<IEvent, Action<IEvent>>>>();
         private readonly TKey userId;
         private readonly IActorRef coordinator;
 
@@ -129,7 +129,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             return false;
         }
 
-        private TUser user = null;
+        private TUser user;
 
         private bool TestCommand(SetUserName evt, out IEvent e)
         {
@@ -485,98 +485,125 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             }
         }
 
-        private void HandleEvent(IActorRef sender, UserNameChanged evt)
+        private void HandleEvent(IActorRef _, UserNameChanged evt)
         {
             user.UserName = evt.UserName;
-            //guess:
             user.NormalizedUserName = evt.UserName.ToUpperInvariant();
-            
 
+            coordinator.Tell(new ActorMessages.UserCoordinator.UserNameChanged<TKey>(userId, user.UserName, user.NormalizedUserName));
         }
 
-        private void HandleEvent(IActorRef sender, TwoFactorEnabledChanged evt)
+        private void HandleEvent(IActorRef _, TwoFactorEnabledChanged evt)
         {
-            throw new NotImplementedException();
+            user.TwoFactorEnabled = evt.TwoFactorEnabled;
         }
 
-        private void HandleEvent(IActorRef sender, TokenUpdated evt)
+        private void HandleEvent(IActorRef _, TokenUpdated evt)
         {
-            throw new NotImplementedException();
+            var tokens = user.Tokens.Where(x => x.LoginProvider.Equals(evt.LoginProvider) && x.Name.Equals(evt.Name)).ToList();
+            foreach (var tkn in tokens)
+            {
+                user.Tokens.Remove(tkn);
+            }
+            user.Tokens.Add(new ImmutableIdentityUserToken<TKey>(userId, evt.LoginProvider, evt.Name, evt.Value));
         }
 
-        private void HandleEvent(IActorRef sender, TokenAdded evt)
+        private void HandleEvent(IActorRef _, TokenAdded evt)
         {
-            throw new NotImplementedException();
+            user.Tokens.Add(new ImmutableIdentityUserToken<TKey>(userId, evt.LoginProvider, evt.Name, evt.Value));
         }
 
-        private void HandleEvent(IActorRef sender, SecurityStampChanged evt)
+        private void HandleEvent(IActorRef _, SecurityStampChanged evt)
         {
-            throw new NotImplementedException();
+            user.SecurityStamp = evt.Stamp;
         }
 
-        private void HandleEvent(IActorRef sender, PhoneNumberConfirmed evt)
+        private void HandleEvent(IActorRef _, PhoneNumberConfirmed evt)
         {
-            throw new NotImplementedException();
+            user.PhoneNumberConfirmed = evt.Confirmed;
         }
 
-        private void HandleEvent(IActorRef sender, PhoneNumberChanged evt)
+        private void HandleEvent(IActorRef _, PhoneNumberChanged evt)
         {
-            throw new NotImplementedException();
+            user.PhoneNumber = evt.PhoneNumber;
         }
 
-        private void HandleEvent(IActorRef sender, PasswordHashChanged evt)
+        private void HandleEvent(IActorRef _, PasswordHashChanged evt)
         {
-            throw new NotImplementedException();
+            user.PasswordHash = evt.PasswordHash;
         }
 
-        private void HandleEvent(IActorRef sender, NormalizedEmailChanged evt)
+        private void HandleEvent(IActorRef _, NormalizedEmailChanged evt)
         {
-            throw new NotImplementedException();
+            user.NormalizedEmail = evt.Email;
+            coordinator.Tell(new ActorMessages.UserCoordinator.UserEmailChanged<TKey>(userId, evt.Email, true));
         }
 
-        private void HandleEvent(IActorRef sender, LockoutEndDateChanged evt)
+        private void HandleEvent(IActorRef _, LockoutEndDateChanged evt)
         {
-            throw new NotImplementedException();
+            user.LockoutEnd = evt.LockoutEnd;
         }
 
-        private void HandleEvent(IActorRef sender, LockoutEnabledChanged evt)
+        private void HandleEvent(IActorRef _, LockoutEnabledChanged evt)
         {
-            throw new NotImplementedException();
+            user.LockoutEnabled = evt.LockoutEnabled;
         }
 
-        private void HandleEvent(IActorRef sender, EmailConfirmed evt)
+        private void HandleEvent(IActorRef _, EmailConfirmed evt)
         {
-            throw new NotImplementedException();
+            user.EmailConfirmed = evt.Confirmed;
         }
 
-        private void HandleEvent(IActorRef sender, EmailChanged evt)
+        private void HandleEvent(IActorRef _, EmailChanged evt)
         {
-            throw new NotImplementedException();
+            user.Email = evt.Email;
+            coordinator.Tell(new ActorMessages.UserCoordinator.UserEmailChanged<TKey>(userId, evt.Email, false));
         }
 
-        private void HandleEvent(IActorRef sender, TokenRemoved evt)
+        private void HandleEvent(IActorRef _, TokenRemoved evt)
         {
-            throw new NotImplementedException();
+            var tokens = user.Tokens.Where(x => x.LoginProvider.Equals(evt.LoginProvider) && x.Name.Equals(evt.Name)).ToList();
+            foreach (var tkn in tokens)
+            {
+                user.Tokens.Remove(tkn);
+            }
         }
 
-        private void HandleEvent(IActorRef sender, LoginRemoved evt)
+        private void HandleEvent(IActorRef _, LoginRemoved evt)
         {
-            throw new NotImplementedException();
+            var logins = user.Logins.Where(x => x.LoginProvider.Equals(evt.LoginProvider) && x.ProviderKey.Equals(evt.ProviderKey)).ToList();
+            foreach (var login in logins)
+            {
+                user.Logins.Remove(login);
+            }
+            coordinator.Tell(new ActorMessages.UserCoordinator.UserLoginRemoved<TKey>(userId, new ImmutableUserLoginInfo(evt.LoginProvider, evt.LoginProvider, string.Empty)));
         }
 
-        private void HandleEvent(IActorRef sender, ClaimsRemoved evt)
+        private void HandleEvent(IActorRef _, ClaimsRemoved evt)
         {
-            throw new NotImplementedException();
+            var claimsToRemove = user.Claims.Union(evt.ClaimsToRemove, ClaimComparer.Instance).ToList();
+            foreach (var claim in claimsToRemove)
+            {
+                user.Claims.Remove(claim);
+            }
+            coordinator.Tell(new ActorMessages.UserCoordinator.UserClaimsRemoved<TKey>(userId, claimsToRemove));
         }
 
-        private void HandleEvent(IActorRef sender, UserLoginInfoAdded evt)
+        private void HandleEvent(IActorRef _, UserLoginInfoAdded evt)
         {
-            throw new NotImplementedException();
+            var loginInfo = new ImmutableUserLoginInfo(evt.LoginProvider, evt.ProviderKey, evt.ProviderDisplayName);
+            user.Logins.Add(loginInfo);
+            coordinator.Tell(new ActorMessages.UserCoordinator.UserLoginAdded<TKey>(userId, loginInfo));
         }
 
-        private void HandleEvent(IActorRef sender, ClaimsAdded evt)
+        private void HandleEvent(IActorRef _, ClaimsAdded evt)
         {
-            throw new NotImplementedException();
+            var claimsToAdd = evt.ClaimsToAdd.Except(user.Claims, ClaimComparer.Instance).ToList();
+            foreach (var claim in claimsToAdd)
+            {
+                user.Claims.Add(claim);
+            }
+            coordinator.Tell(new ActorMessages.UserCoordinator.UserClaimsAdded<TKey>(userId, claimsToAdd));
         }
     }
 }
