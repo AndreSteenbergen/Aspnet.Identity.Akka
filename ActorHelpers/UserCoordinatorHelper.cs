@@ -15,7 +15,6 @@ namespace Aspnet.Identity.Akka.ActorHelpers
         public UserCoordinatorHelper(Func<TKey, IActorRef> createUserActor, Action<IActorRef> killUserActor)
         {
             this.createUserActor = createUserActor;
-            this.killUserActor = killUserActor;
         }
 
         private bool inSync;
@@ -24,14 +23,12 @@ namespace Aspnet.Identity.Akka.ActorHelpers
         private Dictionary<TKey, IActorRef> userActors = new Dictionary<TKey, IActorRef>();
 
         //just to find users by key, username, email and external login.
-        private HashSet<TKey> allUserIds = new HashSet<TKey>();
         private Dictionary<TKey, Tuple<string, string, HashSet<ExternalLogin>>> existingUsers = new Dictionary<TKey, Tuple<string, string, HashSet<ExternalLogin>>>();
         private Dictionary<string, TKey> existingUserNames = new Dictionary<string, TKey>();
         private Dictionary<string, TKey> existingEmails = new Dictionary<string, TKey>();
         private Dictionary<ExternalLogin, TKey> existingLogins = new Dictionary<ExternalLogin, TKey>();
 
         private readonly Func<TKey, IActorRef> createUserActor;
-        private readonly Action<IActorRef> killUserActor;
 
         private List<Tuple<IActorRef, ICommand, Action<IEvent, Action<IEvent>>>> stash = new List<Tuple<IActorRef, ICommand, Action<IEvent, Action<IEvent>>>>();
 
@@ -59,10 +56,13 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                     persist(cmd.Evt, e => OnEvent(sender, e));
                     break;
                 case RequestClaims<TKey> req:
+                    ForwardUserRequests(req.UserId, req);
                     break;
                 case RequestTokens<TKey> req:
+                    ForwardUserRequests(req.UserId, req);
                     break;
                 case RequestUserLoginInfo<TKey> req:
+                    ForwardUserRequests(req.UserId, req);
                     break;
                 case FindById fbi:
                     break;
@@ -83,6 +83,15 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             }
         }
 
+        private void ForwardUserRequests(TKey userId, IGetUserProperties req)
+        {
+            if (!userActors.TryGetValue(userId, out IActorRef actor))
+            {
+                userActors[userId] = actor = createUserActor(userId);
+            }
+            actor.Forward(req);
+        }
+
         /// <summary>
         /// These events are raised by the user actor, or by the persistence layer
         /// </summary>
@@ -92,6 +101,9 @@ namespace Aspnet.Identity.Akka.ActorHelpers
         {
             switch (message)
             {
+                //when events are not meant for the coordinator, but are persisted in the coordinator
+                case IUserEvent<TKey> evt:
+                    break;
                 case UserCreated<TKey> evt:
                     break;
                 case UserDeleted<TKey> evt:

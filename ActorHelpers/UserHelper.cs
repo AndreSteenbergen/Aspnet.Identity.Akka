@@ -49,6 +49,17 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                 case DeleteUser<TKey> evt:
                     HandleCommand(sender, evt, persist);
                     break;
+
+                //requests
+                case RequestClaims<TKey> req:
+                    sender.Tell(user?.Claims ?? new Claim[0]);
+                    break;
+                case RequestTokens<TKey> req:
+                    sender.Tell(user?.Tokens ?? new ImmutableIdentityUserToken<TKey>[0]);
+                    break;
+                case RequestUserLoginInfo<TKey> req:
+                    sender.Tell(user?.Logins ?? new ImmutableUserLoginInfo[0]);
+                    break;
             }
         }
 
