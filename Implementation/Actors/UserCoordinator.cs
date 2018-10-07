@@ -38,6 +38,8 @@ namespace Aspnet.Identity.Akka.Actors
 
             var ctx = Context;
             userCoordinatorHelper = new UserCoordinatorHelper<TKey, TUser>(CreateChildActor, () => ctx);
+
+            if (startAsInSync) userCoordinatorHelper.SetInSync();
         }
 
         private IActorRef CreateChildActor(TKey identityUser)

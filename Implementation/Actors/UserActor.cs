@@ -29,7 +29,7 @@ namespace Aspnet.Identity.Akka.Actors
             switch (message)
             {
                 case InSyncCommand insync:
-                    userHelper.SetInSync(insync.IsSynchronized);
+                    userHelper.SetInSync();
                     break;
                 case IEvent @event:
                     userHelper.OnEvent(Sender, @event);

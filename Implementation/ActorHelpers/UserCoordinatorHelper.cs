@@ -50,10 +50,13 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             }
             stash.Clear();
 
-            var fwCmd = InSyncCommand.Instance;
-            foreach (var actor in userActors.Values)
+            if (withRecursion)
             {
-                actor.Tell(fwCmd);
+                var fwCmd = InSyncCommand.Instance;
+                foreach (var actor in userActors.Values)
+                {
+                    actor.Tell(fwCmd);
+                }
             }
         }
 
