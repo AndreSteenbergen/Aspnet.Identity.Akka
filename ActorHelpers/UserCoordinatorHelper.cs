@@ -344,42 +344,139 @@ namespace Aspnet.Identity.Akka.ActorHelpers
 
         private void HandleEvent(UserClaimsRemoved<TKey> evt)
         {
-            throw new NotImplementedException();
+            foreach (var claim in evt.Claims)
+            {
+                if (usersByClaims.TryGetValue(claim.Type, out Dictionary<string, HashSet<TKey>> byType))
+                {
+                    if (byType.TryGetValue(claim.Value, out HashSet<TKey> hs))
+                    {
+                        hs.Remove(evt.UserId);
+                        if (hs.Count == 0)
+                        {
+                            byType.Remove(claim.Value);
+                        }
+                    }
+                    if (byType.Count == 0)
+                    {
+                        usersByClaims.Remove(claim.Type);
+                    }
+                }
+            }
+
+            var (normalizedEmail, normalizedUser, username, logins, claims) = reverseLookup[evt.UserId];
+            foreach (var claim in claims)
+            {
+                claims.RemoveWhere(c => c.Type.Equals(claim.Type) && c.Value.Equals(claim.Value));
+            }
         }
 
         private void HandleEvent(UserClaimsAdded<TKey> evt)
         {
-            throw new NotImplementedException();
+            var (normalizedEmail, normalizedUser, username, logins, claims) = reverseLookup[evt.UserId];
+            foreach (var claim in evt.Claims)
+            {
+                claims.Add(claim);
+
+                if (!usersByClaims.TryGetValue(claim.Type, out Dictionary<string, HashSet<TKey>> byType))
+                {
+                    usersByClaims[claim.Type] = byType = new Dictionary<string, HashSet<TKey>>();
+                }
+                if (!byType.TryGetValue(claim.Value, out HashSet<TKey> hs))
+                {
+                    byType[claim.Value] = hs = new HashSet<TKey>();
+                }
+                hs.Add(evt.UserId);
+            }
         }
 
         private void HandleEvent(UserEmailChanged<TKey> evt)
         {
-            throw new NotImplementedException();
+            if (evt.NormalizedEmail)
+            {
+                var (normalizedEmail, normalizedUser, username, logins, claims) = reverseLookup[evt.UserId];
+                existingEmails.Remove(normalizedEmail);
+                existingEmails[evt.Email] = evt.UserId;
+
+                reverseLookup[evt.UserId] = new Tuple<string, string, string, HashSet<ExternalLogin>, HashSet<Claim>>(
+                    evt.Email, normalizedUser, username, logins, claims);
+            }
         }
 
         private void HandleEvent(UserLoginRemoved<TKey> evt)
         {
-            throw new NotImplementedException();
+            var (normalizedEmail, normalizedUser, username, logins, claims) = reverseLookup[evt.UserId];
+
+            var login = new ExternalLogin(evt.UserLoginInfo.LoginProvider, evt.UserLoginInfo.ProviderKey);
+            existingLogins.Remove(login);
+            logins.Remove(login);
         }
 
         private void HandleEvent(UserLoginAdded<TKey> evt)
         {
-            throw new NotImplementedException();
+            var (normalizedEmail, normalizedUser, username, logins, claims) = reverseLookup[evt.UserId];
+
+            var login = new ExternalLogin(evt.UserLoginInfo.LoginProvider, evt.UserLoginInfo.ProviderKey);
+            logins.Add(login);
+            existingLogins[login] = evt.UserId;
         }
 
         private void HandleEvent(UserNameChanged<TKey> evt)
         {
-            throw new NotImplementedException();
+            var (normalizedEmail, normalizedUser, username, logins, claims) = reverseLookup[evt.UserId];
+            existingUserNames.Remove(normalizedUser);
+            existingUserNames.Remove(username);
+
+            existingUserNames[evt.NormalizedUsername] = evt.UserId;
+            existingUserNames[evt.UserName.ToUpperInvariant()] = evt.UserId;
+
+            reverseLookup[evt.UserId] = new Tuple<string, string, string, HashSet<ExternalLogin>, HashSet<Claim>>(
+                normalizedEmail, evt.NormalizedUsername, evt.UserName.ToUpperInvariant(), logins, claims);
         }
 
         private void HandleEvent(UserDeleted<TKey> evt)
         {
-            throw new NotImplementedException();
+            var (normalizedEmail, normalizedUser, username, logins, claims) = reverseLookup[evt.UserId];
+            existingEmails.Remove(normalizedEmail);
+            existingUserNames.Remove(normalizedUser);
+            existingUserNames.Remove(username);
+            foreach (var login in logins)
+            {
+                existingLogins.Remove(login);
+            }
+            foreach (var claim in claims)
+            {
+                if (usersByClaims.TryGetValue(claim.Type, out Dictionary<string, HashSet<TKey>> byType))
+                {
+                    if (byType.TryGetValue(claim.Value, out HashSet<TKey> hs))
+                    {
+                        hs.Remove(evt.UserId);
+                        if (hs.Count == 0)
+                        {
+                            byType.Remove(claim.Value);
+                        }
+                    }
+                    if (byType.Count == 0)
+                    {
+                        usersByClaims.Remove(claim.Type);
+                    }
+                }
+            }
+            reverseLookup.Remove(evt.UserId);
         }
 
         private void HandleEvent(UserCreated<TKey> evt)
         {
-            throw new NotImplementedException();
+            existingEmails[evt.NormalizedEmail] = evt.UserId;
+            existingUserNames[evt.NormalizedUserName] = evt.UserId;
+            existingUserNames[evt.UserName.ToUpperInvariant()] = evt.UserId;
+            existingUserNames[evt.UserId.ToString()] = evt.UserId;
+
+            reverseLookup[evt.UserId] = new Tuple<string, string, string, HashSet<ExternalLogin>, HashSet<Claim>>(
+                evt.NormalizedEmail,
+                evt.NormalizedUserName,
+                evt.UserName.ToUpperInvariant(),
+                new HashSet<ExternalLogin>(),
+                new HashSet<Claim>());
         }
     }
 }
