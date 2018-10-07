@@ -301,10 +301,12 @@ namespace Aspnet.Identity.Akka.ActorHelpers
         {
             switch (message)
             {
-                //when events are not meant for the coordinator, but are persisted in the coordinator
+                //when events are not meant for the coordinator
+                //but persistence occured on the same aggregation
                 case IUserEvent<TKey> evt:
                     break;
                 case UserCreated<TKey> evt:
+
                     break;
                 case UserDeleted<TKey> evt:
                     break;

@@ -3,7 +3,7 @@ using System;
 
 namespace Aspnet.Identity.Akka.ActorMessages
 {
-    public class InSyncCommand : ICommand
+    public class InSyncCommand
     {
         public InSyncCommand(bool inSync)
         {

@@ -10,11 +10,18 @@ namespace Aspnet.Identity.Akka.Actors
         where TKey : IEquatable<TKey>
         where TUser : IdentityUser<TKey>
     {
+        private TKey userId;
         private UserHelper<TKey, TUser> userHelper;
+        private readonly Action<TKey, IEvent, Action<IEvent>> persist;
 
-        public UserActor(TKey userId, IActorRef coordinator)
+        public UserActor(
+            TKey userId,
+            IActorRef coordinator,
+            Action<TKey, IEvent, Action<IEvent>> persist)
         {
+            this.userId = userId;
             userHelper = new UserHelper<TKey, TUser>(userId, coordinator);
+            this.persist = persist;
         }
 
         protected override void OnReceive(object message)
@@ -37,5 +44,7 @@ namespace Aspnet.Identity.Akka.Actors
         {
             userHelper.OnCommand(Sender, command, (evt, a) => a(evt));
         }
+
+
     }
 }
