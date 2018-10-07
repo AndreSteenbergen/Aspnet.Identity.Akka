@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 
 namespace Aspnet.Identity.Akka.ActorHelpers
 {
@@ -221,7 +220,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
 
             if (!string.Equals(user.PhoneNumber, evt.PhoneNumber))
             {
-                e = new PhoneNumberConfirmed(evt.PhoneNumberConfirmed);
+                e = new PhoneNumberChanged(evt.PhoneNumber);
             }
             return true;
         }
