@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 
 namespace Aspnet.Identity.Akka.ActorHelpers
 {
@@ -416,7 +417,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                 return false;
             }
 
-            var claimsToAdd = evt.Claims.Except(user.Claims, ClaimComparer.Instance).ToList();
+            var claimsToAdd = evt.Claims.Except(user.Claims ?? new Claim[0], ClaimComparer.Instance).ToList();
             if (claimsToAdd.Count > 0)
             {
                 e = new ClaimsAdded(claimsToAdd);
@@ -510,6 +511,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
 
         private void HandleEvent(IActorRef _, TokenAdded evt)
         {
+            if (user.Tokens == null) user.Tokens = new List<ImmutableIdentityUserToken<TKey>>();
             user.Tokens.Add(new ImmutableIdentityUserToken<TKey>(userId, evt.LoginProvider, evt.Name, evt.Value));
         }
 
@@ -591,6 +593,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
 
         private void HandleEvent(IActorRef _, UserLoginInfoAdded evt)
         {
+            if (user.Logins == null) user.Logins = new List<ImmutableUserLoginInfo>();
             var loginInfo = new ImmutableUserLoginInfo(evt.LoginProvider, evt.ProviderKey, evt.ProviderDisplayName);
             user.Logins.Add(loginInfo);
             coordinator.Tell(new ActorMessages.UserCoordinator.UserLoginAdded<TKey>(userId, loginInfo));
@@ -598,6 +601,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
 
         private void HandleEvent(IActorRef _, ClaimsAdded evt)
         {
+            if (user.Claims == null) user.Claims = new List<Claim>();
             var claimsToAdd = evt.ClaimsToAdd.Except(user.Claims, ClaimComparer.Instance).ToList();
             foreach (var claim in claimsToAdd)
             {
