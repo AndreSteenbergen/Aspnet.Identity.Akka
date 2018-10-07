@@ -52,14 +52,28 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             }
         }
 
-        private void HandleCommand(IActorRef sender, DeleteUser<TKey> evt, Action<IEvent, Action<IEvent>> persist)
+        private void HandleCommand(IActorRef sender, DeleteUser<TKey> _, Action<IEvent, Action<IEvent>> persist)
         {
-            throw new NotImplementedException();
+            if (user == null)
+            {
+                sender.Tell(IdentityResult.Failed(new IdentityError { Description = "User does not exist" }));
+            }
+            else
+            {
+                persist(new UserDeleted(), e => OnEvent(sender, e));
+            }
         }
 
         private void HandleCommand(IActorRef sender, CreateUser<TKey, TUser> evt, Action<IEvent, Action<IEvent>> persist)
         {
-            throw new NotImplementedException();
+            if (user != null)
+            {
+                sender.Tell(IdentityResult.Failed(new IdentityError { Description = "User with same ID already exists" }));
+            }
+            else
+            {
+                persist(new UserCreated<TKey, TUser>(evt.User), e => OnEvent(sender, e));
+            }
         }
 
         private void HandleCommand(IActorRef sender, UpdateUser<TKey, TUser> evt, Action<IEvent, Action<IEvent>> persist)
@@ -429,6 +443,14 @@ namespace Aspnet.Identity.Akka.ActorHelpers
         {
             switch (message)
             {
+                case UserCreated<TKey, TUser> evt:
+                    HandleEvent(sender, evt);
+                    return;
+                case UserDeleted d:
+                    user = null;
+                    sender.Tell(IdentityResult.Success);
+                    coordinator.Tell(new ActorMessages.UserCoordinator.UserDeleted<TKey>(userId));
+                    return;
                 case ClaimsAdded evt:
                     HandleEvent(sender, evt);
                     return;
@@ -486,6 +508,22 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             }
         }
 
+        private void HandleEvent(IActorRef sender, UserCreated<TKey, TUser> evt)
+        {
+            user = evt.User;
+            sender.Tell(IdentityResult.Success);
+
+            coordinator.Tell(new ActorMessages.UserCoordinator.UserCreated<TKey>(userId, evt.User.UserName, evt.User.NormalizedUserName, evt.User.Email, evt.User.NormalizedEmail));
+            if (evt.User.Claims != null) coordinator.Tell(new ActorMessages.UserCoordinator.UserClaimsAdded<TKey>(userId, user.Claims));
+            if (evt.User.Logins != null)
+            {
+                foreach (var login in evt.User.Logins)
+                {
+                    coordinator.Tell(new ActorMessages.UserCoordinator.UserLoginAdded<TKey>(userId, login));
+                }
+            }
+        }
+
         private void HandleEvent(IActorRef _, UserNameChanged evt)
         {
             user.UserName = evt.UserName;
@@ -511,8 +549,8 @@ namespace Aspnet.Identity.Akka.ActorHelpers
 
         private void HandleEvent(IActorRef _, TokenAdded evt)
         {
-            if (user.Tokens == null) user.Tokens = new List<ImmutableIdentityUserToken<TKey>>();
-            user.Tokens.Add(new ImmutableIdentityUserToken<TKey>(userId, evt.LoginProvider, evt.Name, evt.Value));
+            (user.Tokens ?? (user.Tokens = new List<ImmutableIdentityUserToken<TKey>>()))
+                .Add(new ImmutableIdentityUserToken<TKey>(userId, evt.LoginProvider, evt.Name, evt.Value));
         }
 
         private void HandleEvent(IActorRef _, SecurityStampChanged evt)
