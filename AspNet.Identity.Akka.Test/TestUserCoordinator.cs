@@ -40,7 +40,11 @@ namespace AspNet.Identity.Akka.Test
 
             userCoordinator.Tell(new CreateUser<Guid, TestIdentityUser>(user));
             var result = ExpectMsg<IdentityResult>().Succeeded;
+
             Assert.True(result);
+
+            Assert.Single(coordinatorPersistCalled);
+            Assert.Single(userPersistCalled);
         }
     }
 }
