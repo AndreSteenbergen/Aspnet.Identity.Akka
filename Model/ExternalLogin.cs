@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Aspnet.Identity.Akka
+﻿namespace Aspnet.Identity.Akka.Model
 {
     public struct ExternalLogin
     {
