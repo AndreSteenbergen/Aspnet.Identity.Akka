@@ -41,14 +41,20 @@ namespace Aspnet.Identity.Akka.ActorHelpers
         private readonly Func<IActorContext> getContext;
         private List<Tuple<IActorRef, ICommand, Action<IEvent, Action<IEvent>>>> stash = new List<Tuple<IActorRef, ICommand, Action<IEvent, Action<IEvent>>>>();
 
-        public virtual void SetInSync(bool inSync)
+        public virtual void SetInSync(bool withRecursion = false)
         {
-            this.inSync = inSync;
+            inSync = true;
             foreach (var cmd in stash)
             {
                 OnCommand(cmd.Item1, cmd.Item2, cmd.Item3);
             }
             stash.Clear();
+
+            var fwCmd = InSyncCommand.Instance;
+            foreach (var actor in userActors.Values)
+            {
+                actor.Tell(fwCmd);
+            }
         }
 
         public virtual void OnCommand(IActorRef sender, ICommand message, Action<IEvent, Action<IEvent>> persist)
@@ -304,25 +310,76 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                 //when events are not meant for the coordinator
                 //but persistence occured on the same aggregation
                 case IUserEvent<TKey> evt:
+                    if (!userActors.TryGetValue(evt.UserId, out IActorRef actor)) {
+                        userActors[evt.UserId] = actor = createUserActor(evt.UserId);
+                    }
+                    actor.Tell(evt.Evt);
                     break;
                 case UserCreated<TKey> evt:
-
+                    HandleEvent(evt);
                     break;
                 case UserDeleted<TKey> evt:
+                    HandleEvent(evt);
                     break;
                 case UserNameChanged<TKey> evt:
+                    HandleEvent(evt);
                     break;
                 case UserLoginAdded<TKey> evt:
+                    HandleEvent(evt);
                     break;
                 case UserLoginRemoved<TKey> evt:
+                    HandleEvent(evt);
                     break;
                 case UserEmailChanged<TKey> evt:
+                    HandleEvent(evt);
                     break;
                 case UserClaimsAdded<TKey> evt:
+                    HandleEvent(evt);
                     break;
                 case UserClaimsRemoved<TKey> evt:
+                    HandleEvent(evt);
                     break;
             }
+        }
+
+        private void HandleEvent(UserClaimsRemoved<TKey> evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(UserClaimsAdded<TKey> evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(UserEmailChanged<TKey> evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(UserLoginRemoved<TKey> evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(UserLoginAdded<TKey> evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(UserNameChanged<TKey> evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(UserDeleted<TKey> evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleEvent(UserCreated<TKey> evt)
+        {
+            throw new NotImplementedException();
         }
     }
 }

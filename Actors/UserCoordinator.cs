@@ -7,7 +7,7 @@ using System;
 namespace Aspnet.Identity.Akka.Actors
 {
     /// <summary>
-    /// non persistent usercoordinator
+    /// non persistent usercoordinator, provides callbacks to actions so persistence can occur outside of the actors
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TUser"></typeparam>
@@ -21,10 +21,18 @@ namespace Aspnet.Identity.Akka.Actors
         private Action<IEvent, Action<IEvent>> persist;
         private readonly Action<TKey, IEvent, Action<IEvent>> childPersist;
 
+        /// <summary>
+        /// Constructor for streaming usercoordinator
+        /// </summary>
+        /// <param name="startAsInSync"></param>
+        /// <param name="coordinatorPerist"></param>
+        /// <param name="childPersist">Important to store objects of type IUserEvent<TKey>, coordinator needs to send events to correct userActor</param>
         public UserCoordinator(
+            bool startAsInSync,
             Action<IEvent, Action<IEvent>> coordinatorPerist,
             Action<TKey, IEvent, Action<IEvent>> childPersist)
         {
+            coordinatorInsync = startAsInSync;
             this.persist = coordinatorPerist;
             this.childPersist = childPersist;
 
@@ -37,7 +45,7 @@ namespace Aspnet.Identity.Akka.Actors
             var childActor = Context.ActorOf(Props.Create(() => new UserActor<TKey, TUser>(identityUser, Context.Self, childPersist)));
             if (coordinatorInsync)
             {
-                childActor.Tell(new InSyncCommand(true));
+                childActor.Tell(InSyncCommand.Instance);
             }
             return childActor;
         }
@@ -48,7 +56,7 @@ namespace Aspnet.Identity.Akka.Actors
             {
                 case InSyncCommand insync:
                     coordinatorInsync = true;
-                    userCoordinatorHelper.SetInSync(insync.IsSynchronized);
+                    userCoordinatorHelper.SetInSync(true);
                     break;
                 case IEvent @event:
                     userCoordinatorHelper.OnEvent(Sender, @event);

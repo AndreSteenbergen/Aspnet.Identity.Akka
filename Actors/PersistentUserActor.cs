@@ -26,7 +26,7 @@ namespace Aspnet.Identity.Akka.Actors
         protected override void OnReplaySuccess()
         {
             base.OnReplaySuccess();
-            userHelper.SetInSync(true);
+            userHelper.SetInSync();
         }
 
         protected override void OnCommand(object message)

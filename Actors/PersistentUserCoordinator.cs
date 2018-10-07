@@ -30,7 +30,7 @@ namespace Aspnet.Identity.Akka.Actors
         protected override void OnReplaySuccess()
         {
             base.OnReplaySuccess();
-            userCoordinatorHelper.SetInSync(true);
+            userCoordinatorHelper.SetInSync(false);
         }
 
         protected override void OnCommand(object message)

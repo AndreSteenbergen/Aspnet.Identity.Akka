@@ -26,9 +26,9 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             this.coordinator = coordinator;
         }
 
-        public virtual void SetInSync(bool inSync)
+        public virtual void SetInSync()
         {
-            this.inSync = inSync;
+            inSync = true;
             foreach (var cmd in stash)
             {
                 OnCommand(cmd.Item1, cmd.Item2, cmd.Item3);

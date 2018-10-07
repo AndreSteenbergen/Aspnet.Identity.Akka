@@ -35,16 +35,9 @@ namespace Aspnet.Identity.Akka.Actors
                     userHelper.OnEvent(Sender, @event);
                     break;
                 case ICommand command:
-                    HandleCommand(command);
+                    userHelper.OnCommand(Sender, command, (evt, a) => persist(userId, evt, a));
                     break;
             }
         }
-
-        protected virtual void HandleCommand(ICommand command)
-        {
-            userHelper.OnCommand(Sender, command, (evt, a) => a(evt));
-        }
-
-
     }
 }
