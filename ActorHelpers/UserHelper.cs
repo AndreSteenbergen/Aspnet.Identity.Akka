@@ -448,8 +448,10 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                     return;
                 case UserDeleted d:
                     user = null;
+                    if (!inSync) return;
+
                     sender.Tell(IdentityResult.Success);
-                    coordinator.Tell(new ActorMessages.UserCoordinator.UserDeleted<TKey>(userId));
+                    coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new UserDeleted<TKey>(userId)));
                     return;
                 case ClaimsAdded evt:
                     HandleEvent(sender, evt);
@@ -511,15 +513,17 @@ namespace Aspnet.Identity.Akka.ActorHelpers
         private void HandleEvent(IActorRef sender, UserCreated<TKey, TUser> evt)
         {
             user = evt.User;
-            sender.Tell(IdentityResult.Success);
+            if (!inSync) return;
 
-            coordinator.Tell(new ActorMessages.UserCoordinator.UserCreated<TKey>(userId, evt.User.UserName, evt.User.NormalizedUserName, evt.User.Email, evt.User.NormalizedEmail));
-            if (evt.User.Claims != null) coordinator.Tell(new ActorMessages.UserCoordinator.UserClaimsAdded<TKey>(userId, user.Claims));
+            sender.Tell(IdentityResult.Success);
+                        
+            coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent((new ActorMessages.UserCoordinator.UserCreated<TKey>(userId, evt.User.UserName, evt.User.NormalizedUserName, evt.User.Email, evt.User.NormalizedEmail))));
+            if (evt.User.Claims != null) coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserClaimsAdded<TKey>(userId, user.Claims)));
             if (evt.User.Logins != null)
             {
                 foreach (var login in evt.User.Logins)
                 {
-                    coordinator.Tell(new ActorMessages.UserCoordinator.UserLoginAdded<TKey>(userId, login));
+                    coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserLoginAdded<TKey>(userId, login)));
                 }
             }
         }
@@ -528,8 +532,9 @@ namespace Aspnet.Identity.Akka.ActorHelpers
         {
             user.UserName = evt.UserName;
             user.NormalizedUserName = evt.UserName.ToUpperInvariant();
+            if (!inSync) return;
 
-            coordinator.Tell(new ActorMessages.UserCoordinator.UserNameChanged<TKey>(userId, user.UserName, user.NormalizedUserName));
+            coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserNameChanged<TKey>(userId, user.UserName, user.NormalizedUserName)));
         }
 
         private void HandleEvent(IActorRef _, TwoFactorEnabledChanged evt)
@@ -576,7 +581,9 @@ namespace Aspnet.Identity.Akka.ActorHelpers
         private void HandleEvent(IActorRef _, NormalizedEmailChanged evt)
         {
             user.NormalizedEmail = evt.Email;
-            coordinator.Tell(new ActorMessages.UserCoordinator.UserEmailChanged<TKey>(userId, evt.Email, true));
+            if (!inSync) return;
+
+            coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserEmailChanged<TKey>(userId, evt.Email, true)));
         }
 
         private void HandleEvent(IActorRef _, LockoutEndDateChanged evt)
@@ -597,7 +604,9 @@ namespace Aspnet.Identity.Akka.ActorHelpers
         private void HandleEvent(IActorRef _, EmailChanged evt)
         {
             user.Email = evt.Email;
-            coordinator.Tell(new ActorMessages.UserCoordinator.UserEmailChanged<TKey>(userId, evt.Email, false));
+            if (!inSync) return;
+
+            coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserEmailChanged<TKey>(userId, evt.Email, false)));
         }
 
         private void HandleEvent(IActorRef _, TokenRemoved evt)
@@ -616,7 +625,9 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             {
                 user.Logins.Remove(login);
             }
-            coordinator.Tell(new ActorMessages.UserCoordinator.UserLoginRemoved<TKey>(userId, new ImmutableUserLoginInfo(evt.LoginProvider, evt.LoginProvider, string.Empty)));
+            if (!inSync) return;
+
+            coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserLoginRemoved<TKey>(userId, new ImmutableUserLoginInfo(evt.LoginProvider, evt.LoginProvider, string.Empty))));
         }
 
         private void HandleEvent(IActorRef _, ClaimsRemoved evt)
@@ -626,7 +637,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             {
                 user.Claims.Remove(claim);
             }
-            coordinator.Tell(new ActorMessages.UserCoordinator.UserClaimsRemoved<TKey>(userId, claimsToRemove));
+            coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserClaimsRemoved<TKey>(userId, claimsToRemove)));
         }
 
         private void HandleEvent(IActorRef _, UserLoginInfoAdded evt)
@@ -634,7 +645,9 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             if (user.Logins == null) user.Logins = new List<ImmutableUserLoginInfo>();
             var loginInfo = new ImmutableUserLoginInfo(evt.LoginProvider, evt.ProviderKey, evt.ProviderDisplayName);
             user.Logins.Add(loginInfo);
-            coordinator.Tell(new ActorMessages.UserCoordinator.UserLoginAdded<TKey>(userId, loginInfo));
+
+            if (!inSync) return;
+            coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserLoginAdded<TKey>(userId, loginInfo)));
         }
 
         private void HandleEvent(IActorRef _, ClaimsAdded evt)
@@ -645,7 +658,9 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             {
                 user.Claims.Add(claim);
             }
-            coordinator.Tell(new ActorMessages.UserCoordinator.UserClaimsAdded<TKey>(userId, claimsToAdd));
+
+            if (!inSync) return;
+            coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserClaimsAdded<TKey>(userId, claimsToAdd)));
         }
     }
 }

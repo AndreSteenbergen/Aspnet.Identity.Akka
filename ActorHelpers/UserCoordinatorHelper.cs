@@ -55,6 +55,9 @@ namespace Aspnet.Identity.Akka.ActorHelpers
 
             switch (message)
             {
+                case NotifyUserEvent cmd:
+                    persist(cmd.Evt, e => OnEvent(sender, e));
+                    break;
                 case RequestClaims<TKey> req:
                     break;
                 case RequestTokens<TKey> req:
@@ -80,24 +83,30 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             }
         }
 
+        /// <summary>
+        /// These events are raised by the user actor, or by the persistence layer
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="message"></param>
         public virtual void OnEvent(IActorRef sender, IEvent message)
         {
             switch (message)
             {
-                //important to keep track of ids, logins, usernames, claims and email
-                case UserCreated<TKey> uc:
+                case UserCreated<TKey> evt:
                     break;
-                case UserNameChanged<TKey> unc:
+                case UserDeleted<TKey> evt:
                     break;
-                case UserLoginAdded<TKey> ulc:
+                case UserNameChanged<TKey> evt:
                     break;
-                case UserLoginRemoved<TKey> ulr:
+                case UserLoginAdded<TKey> evt:
                     break;
-                case UserEmailChanged<TKey> umc:
+                case UserLoginRemoved<TKey> evt:
                     break;
-                case UserClaimsAdded<TKey> uca:
+                case UserEmailChanged<TKey> evt:
                     break;
-                case UserClaimsRemoved<TKey> ucr:
+                case UserClaimsAdded<TKey> evt:
+                    break;
+                case UserClaimsRemoved<TKey> evt:
                     break;
             }
         }
