@@ -92,7 +92,7 @@ namespace Aspnet.Identity.Akka
 
         public async Task<TUser> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
         {
-            var rst = userCoordinator.Ask<object>(new FindByEmail(normalizedEmail));
+            var rst = await userCoordinator.Ask<object>(new FindByEmail(normalizedEmail));
             return rst as TUser;
         }
 
