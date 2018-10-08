@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Implementation\Aspnet.Identity.Akka.csproj" />
+    <ProjectReference Include="..\Aspnet.Identity.Akka\Aspnet.Identity.Akka.csproj" />
   </ItemGroup>
 
 </Project>

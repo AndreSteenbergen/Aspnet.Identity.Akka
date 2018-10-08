@@ -34,7 +34,5 @@ namespace AspNet.Identity.Akka.Test
             Assert.Single(persister.CoordinatorPersistCalled);
             Assert.Single(persister.UserPersistCalled);
         }
-
-        
     }
 }
