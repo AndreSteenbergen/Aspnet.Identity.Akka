@@ -1,6 +1,8 @@
-﻿namespace Aspnet.Identity.Akka.ActorMessages.User
+﻿using Aspnet.Identity.Akka.Interfaces;
+
+namespace Aspnet.Identity.Akka.ActorMessages.User
 {
-    class FindById
+    class FindById : ICommand
     {
         public FindById(string userId)
         {

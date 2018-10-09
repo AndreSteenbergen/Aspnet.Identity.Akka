@@ -1,8 +1,9 @@
-﻿using Aspnet.Identity.Akka.Model;
+﻿using Aspnet.Identity.Akka.Interfaces;
+using Aspnet.Identity.Akka.Model;
 
 namespace Aspnet.Identity.Akka.ActorMessages.User
 {
-    class FindByLogin
+    class FindByLogin : ICommand
     {
         public FindByLogin(ExternalLogin externalLogin)
         {

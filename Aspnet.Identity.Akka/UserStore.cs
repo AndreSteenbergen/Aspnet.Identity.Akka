@@ -1,5 +1,6 @@
 ﻿using Akka.Actor;
 using Aspnet.Identity.Akka.ActorMessages.User;
+using Aspnet.Identity.Akka.Actors;
 using Aspnet.Identity.Akka.Model;
 using Microsoft.AspNetCore.Identity;
 using System;
@@ -27,9 +28,9 @@ namespace Aspnet.Identity.Akka
     {
         private readonly IActorRef userCoordinator;
 
-        public UserStore(IActorRef userCoordinator)
+        public UserStore(ActorRefFor<UserCoordinator<TKey, TUser>> userCoordinator)
         {
-            this.userCoordinator = userCoordinator;
+            this.userCoordinator = userCoordinator.ActorRef;
         }
 
         public async Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
