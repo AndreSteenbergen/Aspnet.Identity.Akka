@@ -74,13 +74,13 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                     persist(cmd.Evt, e => OnEvent(sender, e));
                     break;
                 case RequestClaims<TKey> req:
-                    ForwardUserRequests(req.UserId, req);
+                    ForwardUserRequests(req.UserId, req, sender);
                     break;
                 case RequestTokens<TKey> req:
-                    ForwardUserRequests(req.UserId, req);
+                    ForwardUserRequests(req.UserId, req, sender);
                     break;
                 case RequestUserLoginInfo<TKey> req:
-                    ForwardUserRequests(req.UserId, req);
+                    ForwardUserRequests(req.UserId, req, sender);
                     break;
                 case FindById fbi:
                     FindById(fbi.UserId, sender);
@@ -297,13 +297,13 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             sender.Tell(new TUser[0]);
         }
 
-        private void ForwardUserRequests(TKey userId, IGetUserProperties req)
+        private void ForwardUserRequests(TKey userId, IGetUserProperties req, IActorRef sender)
         {
             if (!userActors.TryGetValue(userId, out IActorRef actor))
             {
                 userActors[userId] = actor = createUserActor(userId);
             }
-            actor.Forward(req);
+            actor.Tell(req, sender);
         }
 
         /// <summary>
@@ -477,7 +477,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             if (!string.IsNullOrEmpty(evt.NormalizedEmail)) existingEmails[evt.NormalizedEmail] = evt.UserId;
             if (!string.IsNullOrEmpty(evt.NormalizedUserName)) existingUserNames[evt.NormalizedUserName] = evt.UserId;
             if (!string.IsNullOrEmpty(evt.UserName)) existingUserNames[evt.UserName.ToUpperInvariant()] = evt.UserId;
-            existingUserNames[evt.UserId.ToString()] = evt.UserId;
+            existingIds[evt.UserId.ToString()] = evt.UserId;
 
             reverseLookup[evt.UserId] = new Tuple<string, string, string, HashSet<ExternalLogin>, HashSet<Claim>>(
                 evt.NormalizedEmail,

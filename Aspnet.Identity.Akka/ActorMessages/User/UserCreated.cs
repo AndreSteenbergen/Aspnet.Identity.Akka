@@ -9,7 +9,7 @@ namespace Aspnet.Identity.Akka.ActorMessages.User
     {
         public UserCreated(TUser user)
         {
-            User = user;
+            User = (TUser) user.Clone();
         }
 
         public TUser User { get; }

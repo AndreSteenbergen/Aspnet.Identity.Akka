@@ -6,7 +6,8 @@ using System.Security.Claims;
 
 namespace Aspnet.Identity.Akka
 {
-    public abstract class IdentityUser<TKey> where TKey : IEquatable<TKey>
+    public abstract class IdentityUser<TKey> : ICloneable
+        where TKey : IEquatable<TKey>
     {
         public IdentityUser(TKey id)
         {
@@ -32,6 +33,15 @@ namespace Aspnet.Identity.Akka
         public IList<ImmutableIdentityUserToken<TKey>> Tokens { get; set; }
 
         internal IList<IUserPropertyChange> Changes { get; } = new List<IUserPropertyChange>();
+
+        public object Clone()
+        {
+            //memberwise clone
+            var obj = MemberwiseClone();
+
+            return obj;
+        }
+
         public abstract IEnumerable<IUserPropertyChange> CompareDifferences(IdentityUser<TKey> other);
     }
 }

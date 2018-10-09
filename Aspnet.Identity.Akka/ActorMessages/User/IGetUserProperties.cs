@@ -1,6 +1,8 @@
-﻿namespace Aspnet.Identity.Akka.ActorMessages.User
+﻿using Aspnet.Identity.Akka.Interfaces;
+
+namespace Aspnet.Identity.Akka.ActorMessages.User
 {
-    internal interface IGetUserProperties
+    internal interface IGetUserProperties: ICommand
     {
     }
 }

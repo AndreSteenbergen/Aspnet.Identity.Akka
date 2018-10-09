@@ -17,13 +17,4 @@ namespace Aspnet.Identity.Akka.ActorMessages.UserCoordinator
         public string UserName { get; }
         public string NormalizedUsername { get; }
     }
-
-
-
-    
-
-    //            case UserClaimAdded<TKey> uca:
-    //                break;
-    //            case UserClaimRemoved<TKey> ucr:
-    //                break;
 }

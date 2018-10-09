@@ -1,6 +1,5 @@
 ﻿using Aspnet.Identity.Akka.Interfaces;
 using Microsoft.AspNetCore.Identity;
-using System.Collections.Generic;
 
 namespace Aspnet.Identity.Akka.ActorMessages.User
 {

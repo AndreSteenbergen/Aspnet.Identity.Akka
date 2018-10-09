@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Aspnet.Identity.Akka.Interfaces;
+using System;
 
 namespace Aspnet.Identity.Akka.ActorMessages.User
 {

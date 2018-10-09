@@ -71,14 +71,15 @@ namespace Aspnet.Identity.Akka
             user.Logins.Add(new ImmutableUserLoginInfo(login.LoginProvider, login.ProviderKey, login.ProviderDisplayName));
         }
 
-        public Task<IdentityResult> CreateAsync(TUser user, CancellationToken cancellationToken)
+        public async Task<IdentityResult> CreateAsync(TUser user, CancellationToken cancellationToken)
         {
             if (user == null)
             {
                 throw new ArgumentNullException(nameof(user));
             }
 
-            return userCoordinator.Ask<IdentityResult>(new CreateUser<TKey, TUser>(user), cancellationToken);
+            var rst = await userCoordinator.Ask<IdentityResult>(new CreateUser<TKey, TUser>(user), cancellationToken);
+            return rst;
         }
 
         public Task<IdentityResult> DeleteAsync(TUser user, CancellationToken cancellationToken)

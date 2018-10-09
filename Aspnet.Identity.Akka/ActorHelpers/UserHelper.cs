@@ -86,6 +86,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             }
             else
             {
+                evt.User.Changes.Clear();
                 persist(new UserCreated<TKey, TUser>(evt.User), e => OnEvent(sender, e));
             }
         }
@@ -112,6 +113,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             {
                 persist(@event, e => OnEvent(ActorRefs.Nobody, e));
             }
+            evt.User.Changes.Clear();
             sender.Tell(IdentityResult.Success);
         }
 
@@ -531,7 +533,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
 
             sender.Tell(IdentityResult.Success);
                         
-            coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent((new ActorMessages.UserCoordinator.UserCreated<TKey>(userId, evt.User.UserName, evt.User.NormalizedUserName, evt.User.Email, evt.User.NormalizedEmail))));
+            coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserCreated<TKey>(userId, evt.User.UserName, evt.User.NormalizedUserName, evt.User.Email, evt.User.NormalizedEmail)));
             if (evt.User.Claims != null) coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserClaimsAdded<TKey>(userId, user.Claims)));
             if (evt.User.Logins != null)
             {
