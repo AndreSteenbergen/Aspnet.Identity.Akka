@@ -226,7 +226,10 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                 }
                 actor.Tell(ReturnDetails.Instance, sender);
             }
-            sender.Tell(NilMessage.Instance);
+            else
+            {
+                sender.Tell(NilMessage.Instance);
+            }
         }
 
         private void FindByLogin(ExternalLogin external, IActorRef sender)
@@ -238,8 +241,10 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                     userActors[key] = actor = createUserActor(key);
                 }
                 actor.Tell(ReturnDetails.Instance, sender);
-            }
-            sender.Tell(NilMessage.Instance);
+            } else
+            {
+                sender.Tell(NilMessage.Instance);
+            }            
         }
 
         private void FindById(string userId, IActorRef sender)
@@ -251,8 +256,12 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                     userActors[key] = actor = createUserActor(key);
                 }
                 actor.Tell(ReturnDetails.Instance, sender);
+
             }
-            sender.Tell(NilMessage.Instance);
+            else
+            {
+                sender.Tell(NilMessage.Instance);
+            }
         }
 
         private void FindByEmail(string email, IActorRef sender)
@@ -265,7 +274,10 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                 }
                 actor.Tell(ReturnDetails.Instance, sender);
             }
-            sender.Tell(NilMessage.Instance);
+            else
+            {
+                sender.Tell(NilMessage.Instance);
+            }
         }
 
         private void FindByClaim(string type, string value, IActorRef sender)
