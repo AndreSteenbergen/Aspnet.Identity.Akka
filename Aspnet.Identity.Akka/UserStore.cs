@@ -68,7 +68,9 @@ namespace Aspnet.Identity.Akka
             }
 
             await EnsureLoginsLoaded(user);
-            user.Logins.Add(new ImmutableUserLoginInfo(login.LoginProvider, login.ProviderKey, login.ProviderDisplayName));
+            var loginInfo = new ImmutableUserLoginInfo(login.LoginProvider, login.ProviderKey, login.ProviderDisplayName);
+            user.Logins.Add(loginInfo);
+            user.Changes.Add(new AddUserLoginInfo(loginInfo));
         }
 
         public async Task<IdentityResult> CreateAsync(TUser user, CancellationToken cancellationToken)

@@ -1,18 +1,15 @@
 ﻿using Aspnet.Identity.Akka.Interfaces;
+using Aspnet.Identity.Akka.Model;
 
 namespace Aspnet.Identity.Akka.ActorMessages.User
 {
     class UserLoginInfoAdded : IEvent
     {
-        public UserLoginInfoAdded(string loginProvider, string providerDisplayName, string providerKey)
+        public UserLoginInfoAdded(ImmutableUserLoginInfo userloginInfo)
         {
-            LoginProvider = loginProvider;
-            ProviderDisplayName = providerDisplayName;
-            ProviderKey = providerKey;
+            UserloginInfo = userloginInfo;
         }
 
-        public string LoginProvider { get; }
-        public string ProviderDisplayName { get; }
-        public string ProviderKey { get; }
+        public ImmutableUserLoginInfo UserloginInfo { get; }
     }
 }

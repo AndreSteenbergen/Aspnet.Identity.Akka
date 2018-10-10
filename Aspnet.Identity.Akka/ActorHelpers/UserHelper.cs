@@ -425,14 +425,14 @@ namespace Aspnet.Identity.Akka.ActorHelpers
 
             if (user.Logins == null)
             {
-                e = new UserLoginInfoAdded(evt.LoginProvider, evt.ProviderDisplayName, evt.ProviderKey);
+                e = new UserLoginInfoAdded(evt.UserLoginInfo);
             }
             else
             {
-                var login = user.Logins.FirstOrDefault(x => x.LoginProvider.Equals(evt.LoginProvider) && x.ProviderKey.Equals(evt.ProviderKey));
+                var login = user.Logins.FirstOrDefault(x => x.Equals(evt.UserLoginInfo));
                 if (login == default(ImmutableUserLoginInfo))
                 {
-                    e = new UserLoginInfoAdded(evt.LoginProvider, evt.ProviderDisplayName, evt.ProviderKey);
+                    e = new UserLoginInfoAdded(evt.UserLoginInfo);
                 }
             }
 
@@ -659,7 +659,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
         private void HandleEvent(IActorRef _, UserLoginInfoAdded evt)
         {
             if (user.Logins == null) user.Logins = new List<ImmutableUserLoginInfo>();
-            var loginInfo = new ImmutableUserLoginInfo(evt.LoginProvider, evt.ProviderKey, evt.ProviderDisplayName);
+            var loginInfo = evt.UserloginInfo;
             user.Logins.Add(loginInfo);
 
             if (!inSync) return;

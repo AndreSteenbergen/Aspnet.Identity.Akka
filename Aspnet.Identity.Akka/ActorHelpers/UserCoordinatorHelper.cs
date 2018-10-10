@@ -134,7 +134,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                         break;
                     case UserLoginInfoAdded evt:
                         {
-                            if (existingLogins.TryGetValue(new ExternalLogin(evt.LoginProvider, evt.ProviderKey), out TKey otherId) && !otherId.Equals(uu.Key))
+                            if (existingLogins.TryGetValue(new ExternalLogin(evt.UserloginInfo.LoginProvider, evt.UserloginInfo.ProviderKey), out TKey otherId) && !otherId.Equals(uu.Key))
                             {
                                 errors.Add(new IdentityError { Description = "Duplicate Login found." });
                             }
