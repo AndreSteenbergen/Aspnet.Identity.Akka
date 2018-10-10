@@ -13,7 +13,6 @@ namespace Aspnet.Identity.Akka.Model
                 
         public string LoginProvider { get; }
         public string ProviderKey { get; }
-        public string ProviderDisplayName { get; }
         public string DisplayName { get; }
 
         public override bool Equals(object obj)
