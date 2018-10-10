@@ -1,0 +1,22 @@
+﻿@model LogoutViewmodel
+@inject TenantContext tenant
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="modalform">
+    <hgroup>
+        <img src="~/images/@(tenant.Id)_logo.png" />
+        <h1>@tenant.Name</h1>
+        <h2>@tenant.Items[Profile.Tenant.Constants.SLOGAN]</h2>
+    </hgroup>
+
+    <p>U logt nu uit, weet u dit zeker?</p>
+
+    <form asp-action="Logout" class="noLogin">
+        <input type="hidden" name="logoutId" value="@Model.LogoutId" />
+
+        <input type="submit" value="Ja" />
+        <a asp-controller="Manage" asp-action="Index">Nee</a>
+    </form>
+</div>

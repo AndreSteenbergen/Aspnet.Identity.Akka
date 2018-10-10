@@ -1,0 +1,69 @@
+﻿@model RegisterViewmodel
+@inject TenantContext tenant
+@{
+    ViewData["Title"] = "Aanmelden";    
+}
+
+<div class="modalform small">
+    <hgroup>
+        <img src="~/images/@(tenant.Id)_logo.png" />
+        <h1>@tenant.Name</h1>
+        <h2>Aanmelden</h2>
+    </hgroup>
+
+    <form asp-controller="Account" asp-action="Registreer" asp-route-returnurl="@Model.ReturnUrl" method="post">
+        <div class="inputbox withicon">
+            <i class="far fa-user"></i>
+            <input asp-for="Username" placeholder="Gebruikersnaam" />
+            <label>Gebruikersnaam</label>
+        </div>
+
+        <div class="inputbox withicon">
+            <i class="fas fa-at"></i>
+            <input asp-for="Email" placeholder="Emailadres" />
+            <label>Emailadres</label>
+        </div>
+
+        <div class="inputbox withicon">
+            <i class="fas fa-lock"></i>
+            <input asp-for="Password" placeholder="Wachtwoord" />
+            <label>Wachtwoord</label>
+        </div>
+
+        <div class="inputbox withicon">
+            <i class="fas fa-lock"></i>
+            <input asp-for="ConfirmPassword" placeholder="Herhaal wachtwoord" />
+            <label>Herhaal wachtwoord</label>
+        </div>
+
+        <p>Verplichte velden</p>
+        @for (int i = 0; i < Model.Required.Count; i++)
+        {
+            <div class="inputbox">
+                @Html.TextBox("Required[" + i + "].Value", Model.Required[i].Value, new { placeholder = Model.Required[i].DisplayName })
+                <label>@Model.Required[i].DisplayName <span>*</span></label>
+            </div>
+            @Html.Hidden("Required[" + i + "].ClaimType", Model.Required[i].ClaimType)
+            @Html.Hidden("Required[" + i + "].DisplayName", Model.Required[i].DisplayName)
+        }
+
+        <p>Optionele velden</p>
+        @for (int i = 0; i < Model.Optional.Count; i++)
+        {
+            <div class="inputbox">
+                @Html.TextBox("Optional[" + i + "].Value", Model.Optional[i].Value, new { placeholder = Model.Optional[i].DisplayName })
+                <label>@Model.Optional[i].DisplayName</label>
+            </div>
+            @Html.Hidden("Optional[" + i + "].ClaimType", Model.Optional[i].ClaimType)
+            @Html.Hidden("Optional[" + i + "].DisplayName", Model.Optional[i].DisplayName)
+        }
+
+        @Html.HiddenFor(x => x.ReturnUrl)
+        <input type="submit" value="Aanmelden" />
+    </form>
+
+    <form class="noLogin">
+        Heeft u al een account?
+        <a asp-action="Login" asp-route-returnurl="@Model.ReturnUrl">Log in</a>
+    </form>
+</div>

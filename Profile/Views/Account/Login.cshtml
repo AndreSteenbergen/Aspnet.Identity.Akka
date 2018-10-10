@@ -1,0 +1,55 @@
+﻿@model LoginViewmodel
+@inject TenantContext tenant
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="modalform">
+    <hgroup>
+        <img src="~/images/@(tenant.Id)_logo.png" />
+        <h1>@tenant.Name</h1>
+        <h2>@tenant.Items[Profile.Tenant.Constants.SLOGAN]</h2>
+    </hgroup>
+
+    <form asp-controller="Account" asp-action="Login" asp-route-returnurl="@Model.ReturnUrl" method="post">
+        <div class="inputbox withicon">
+            <i class="far fa-user"></i>
+            <input asp-for="Username" placeholder="Gebruikersnaam" />
+            <label>Gebruikersnaam</label>
+        </div>
+
+        <div class="inputbox withicon">
+            <i class="fas fa-lock"></i>
+
+            <input asp-for="Password" placeholder="Wachtwoord" />
+            <label>Wachtwoord</label>
+
+            <p class="forgotpassword">
+                <a asp-area="" asp-controller="Account" asp-action="WachtwoordVergeten">Wachtwoord vergeten?</a>
+            </p>
+        </div>
+
+        <input type="submit" value="LogIn" />
+        @Html.HiddenFor(x => x.ReturnUrl)
+    </form>
+
+    <h3>Of inloggen met</h3>
+
+    <form class="sociallogins" asp-controller="Account" asp-action="ExternalLogin" asp-route-returnurl="@Model.ReturnUrl" method="post">
+        @Html.HiddenFor(x => x.ReturnUrl)
+        @foreach (var loginProvider in SocialLoginProvider.Instance.Get)
+        {
+            <div class="socialButton">
+                <button type="submit" name="provider" value="@loginProvider.Key" style="background-color: @loginProvider.HexColor">
+                    <i class="fab @loginProvider.FontAwesomeIconClass"></i>
+                </button>
+                <span>@loginProvider.DisplayName</span>
+            </div>
+        }
+    </form>
+
+    <form class="noLogin">
+        Voor het eerst?
+        <a asp-action="Registreer" asp-route-returnurl="@Model.ReturnUrl">Meld u nu aan</a>
+    </form>
+</div>

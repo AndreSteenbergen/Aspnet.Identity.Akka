@@ -1,0 +1,50 @@
+﻿@import "modalform.scss";
+
+@mixin transparent_bg($bg_image, $overlay_opacity, $overlay_color) {
+    background: linear-gradient(to bottom, rgba($overlay_color, $overlay_opacity) 0%, rgba($overlay_color, $overlay_opacity)) 100%, url($bg_image) no-repeat;
+}
+
+@mixin theme($name, $primary, $secondary) {
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        @include transparent_bg('../images/background.svg', 0.2, $primary);
+        background-size: cover;
+        background-position: center center;
+        display: flex;
+        min-height: 100vh;
+        flex-direction: column;
+        margin: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #222;
+
+        & > main {
+            flex: 1;
+        }
+    }
+
+    a {
+        color: inherit;
+        transition:0.2s;
+        text-decoration:none;
+
+        &:hover {
+            color : $secondary;
+            text-decoration:underline;
+        }
+    }
+
+    footer {
+        border-top: 2px solid $secondary;
+        background: rgba($secondary, 0.2);
+        text-align: right;
+
+        p {
+            margin: 5px;
+        }
+    }
+
+    @include loginform($primary, $secondary)
+}

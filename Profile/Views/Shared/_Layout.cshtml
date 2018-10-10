@@ -1,0 +1,24 @@
+﻿@inject TenantContext tenant
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] | @tenant.Name</title>
+
+    <link rel="stylesheet" href="~/css/@(tenant.Items[Profile.Tenant.Constants.THEME]).min.css" />
+
+    <link rel="stylesheet" href="~/lib/font-awesome/css/fontawesome-all.min.css" />
+    <link rel="stylesheet" href="~/lib/purecss/pure-min.css" />
+    <link rel="stylesheet" href="~/lib/purecss/grids-responsive-min.css" />
+</head>
+<body>
+    @RenderSection("Navbar", required: false)
+
+    <main>@RenderBody()</main>
+    <footer><p>&copy; 2017 - @(DateTime.Now.Year) @tenant.Name</p></footer>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,15 @@
+﻿@model LoggedOutViewModel
+@inject TenantContext tenant
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="modalform">
+    <hgroup>
+        <img src="~/images/@(tenant.Id)_logo.png" />
+        <h1>@tenant.Name</h1>
+        <h2>@tenant.Items[Profile.Tenant.Constants.SLOGAN]</h2>
+    </hgroup>
+
+    <p>Uw sessie is be&euml;indigd. Klik <a href="/">hier</a> om terug te keren naar het inlogscherm</p>
+</div>
