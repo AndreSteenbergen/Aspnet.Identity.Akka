@@ -195,9 +195,10 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             var errors = new List<IdentityError>();
             if (!string.IsNullOrEmpty(usr.NormalizedUserName) && existingUserNames.ContainsKey(usr.NormalizedUserName)) errors.Add(new IdentityError { Description = "Username already exists" });
             if (!string.IsNullOrEmpty(usr.UserName) && existingUserNames.ContainsKey(usr.UserName.ToUpperInvariant())) errors.Add(new IdentityError { Description = "Username already exists" });
-            if (!string.IsNullOrEmpty(usr.NormalizedEmail) && existingEmails.ContainsKey(usr.NormalizedEmail)) errors.Add(new IdentityError { Description = "Email already exists" });
-            if (string.IsNullOrEmpty(usr.NormalizedEmail) && !string.IsNullOrEmpty(usr.Email) && existingEmails.ContainsKey(usr.Email.ToUpperInvariant()))
-                errors.Add(new IdentityError { Description = "Email already exists" });
+            //should be configured in Configure services, not here: e.g. services.Configure<IdentityOptions>(options => { options.User.RequireUniqueEmail = true; })
+            //if (!string.IsNullOrEmpty(usr.NormalizedEmail) && existingEmails.ContainsKey(usr.NormalizedEmail)) errors.Add(new IdentityError { Description = "Email already exists" });
+            //if (string.IsNullOrEmpty(usr.NormalizedEmail) && !string.IsNullOrEmpty(usr.Email) && existingEmails.ContainsKey(usr.Email.ToUpperInvariant()))
+            //    errors.Add(new IdentityError { Description = "Email already exists" });
             if (existingIds.ContainsKey(usr.Id.ToString())) errors.Add(new IdentityError { Description = "UserId already present" });
             if (usr.Logins != null)
             {
