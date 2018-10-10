@@ -139,8 +139,6 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                     return TestCommand(evt, out e);
                 case SetLockoutEndDate evt:
                     return TestCommand(evt, out e);
-                case SetNormalizedEmail evt:
-                    return TestCommand(evt, out e);
                 case SetPasswordHash evt:
                     return TestCommand(evt, out e);
                 case SetPhoneNumber evt:
@@ -165,9 +163,19 @@ namespace Aspnet.Identity.Akka.ActorHelpers
         private bool TestCommand(SetUserName evt, out IEvent e)
         {
             e = null;
-            if (user != null && !string.Equals(user.UserName, evt.UserName))
+            if (!evt.Normalized)
             {
-                e = new UserNameChanged(evt.UserName);
+                if (user != null && !string.Equals(user.UserName, evt.UserName))
+                {
+                    e = new UserNameChanged(evt.UserName, evt.Normalized);
+                }
+            }
+            else
+            {
+                if (user != null && !string.Equals(user.NormalizedUserName, evt.UserName))
+                {
+                    e = new UserNameChanged(evt.UserName, evt.Normalized);
+                }
             }
 
             //add some tests?
@@ -274,21 +282,6 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             return true;
         }
 
-        private bool TestCommand(SetNormalizedEmail evt, out IEvent e)
-        {
-            e = null;
-            if (user == null)
-            {
-                return false;
-            }
-
-            if (!string.Equals(user.NormalizedEmail, evt.Email))
-            {
-                e = new NormalizedEmailChanged(evt.Email);
-            }
-            return true;
-        }
-
         private bool TestCommand(SetLockoutEndDate evt, out IEvent e)
         {
             e = null;
@@ -341,10 +334,19 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             {
                 return false;
             }
-
-            if (!string.Equals(user.Email, evt.Email))
+            if (!evt.Normalized)
             {
-                e = new EmailChanged(evt.Email);
+                if (!string.Equals(user.Email, evt.Email))
+                {
+                    e = new EmailChanged(evt.Email, evt.Normalized);
+                }
+            }
+            else
+            {
+                if (!string.Equals(user.NormalizedEmail, evt.Email))
+                {
+                    e = new EmailChanged(evt.Email, evt.Normalized);
+                }
             }
             return true;
         }
@@ -496,9 +498,6 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                 case LockoutEndDateChanged evt:
                     HandleEvent(sender, evt);
                     return;
-                case NormalizedEmailChanged evt:
-                    HandleEvent(sender, evt);
-                    return;
                 case PasswordHashChanged evt:
                     HandleEvent(sender, evt);
                     return;
@@ -533,7 +532,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
 
             sender.Tell(IdentityResult.Success);
                         
-            coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserCreated<TKey>(userId, evt.User.UserName, evt.User.NormalizedUserName, evt.User.Email, evt.User.NormalizedEmail)));
+            coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserCreated<TKey>(userId, evt.User.NormalizedUserName, evt.User.NormalizedEmail)));
             if (evt.User.Claims != null) coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserClaimsAdded<TKey>(userId, user.Claims)));
             if (evt.User.Logins != null)
             {
@@ -546,11 +545,15 @@ namespace Aspnet.Identity.Akka.ActorHelpers
 
         private void HandleEvent(IActorRef _, UserNameChanged evt)
         {
-            user.UserName = evt.UserName;
-            user.NormalizedUserName = evt.UserName.ToUpperInvariant();
+            if (!evt.Normalized) user.UserName = evt.UserName;
+            else user.NormalizedUserName = evt.UserName;
+
             if (!inSync) return;
 
-            coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserNameChanged<TKey>(userId, user.UserName, user.NormalizedUserName)));
+            if (evt.Normalized)
+            {
+                coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserNameChanged<TKey>(userId, user.UserName)));
+            }
         }
 
         private void HandleEvent(IActorRef _, TwoFactorEnabledChanged evt)
@@ -594,14 +597,6 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             user.PasswordHash = evt.PasswordHash;
         }
 
-        private void HandleEvent(IActorRef _, NormalizedEmailChanged evt)
-        {
-            user.NormalizedEmail = evt.Email;
-            if (!inSync) return;
-
-            coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserEmailChanged<TKey>(userId, evt.Email, true)));
-        }
-
         private void HandleEvent(IActorRef _, LockoutEndDateChanged evt)
         {
             user.LockoutEnd = evt.LockoutEnd;
@@ -619,10 +614,14 @@ namespace Aspnet.Identity.Akka.ActorHelpers
 
         private void HandleEvent(IActorRef _, EmailChanged evt)
         {
-            user.Email = evt.Email;
+            if (evt.Normalized) user.NormalizedEmail = evt.Email;
+            else user.Email = evt.Email;
             if (!inSync) return;
 
-            coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserEmailChanged<TKey>(userId, evt.Email, false)));
+            if (evt.Normalized)
+            {
+                coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserEmailChanged<TKey>(userId, evt.Email)));
+            }
         }
 
         private void HandleEvent(IActorRef _, TokenRemoved evt)

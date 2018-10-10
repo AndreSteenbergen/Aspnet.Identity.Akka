@@ -4,11 +4,13 @@ namespace Aspnet.Identity.Akka.ActorMessages.User
 {
     class EmailChanged : IEvent
     {
-        public EmailChanged(string email)
+        public EmailChanged(string email, bool normalized)
         {
             Email = email;
+            Normalized = normalized;
         }
 
         public string Email { get; }
+        public bool Normalized { get; }
     }
 }

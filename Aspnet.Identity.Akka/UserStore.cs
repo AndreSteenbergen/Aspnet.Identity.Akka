@@ -376,7 +376,7 @@ namespace Aspnet.Identity.Akka
                 throw new ArgumentNullException(nameof(user));
             }
 
-            user.Changes.Add(new SetEmail(user.Email = email));
+            user.Changes.Add(new SetEmail(user.Email = email, false));
             return Task.CompletedTask;
         }
 
@@ -420,7 +420,7 @@ namespace Aspnet.Identity.Akka
                 throw new ArgumentNullException(nameof(user));
             }
 
-            user.Changes.Add(new SetEmail(user.NormalizedEmail = normalizedEmail));
+            user.Changes.Add(new SetEmail(user.NormalizedEmail = normalizedEmail, true));
             return Task.CompletedTask;
         }
 
@@ -431,7 +431,7 @@ namespace Aspnet.Identity.Akka
                 throw new ArgumentNullException(nameof(user));
             }
 
-            user.Changes.Add(new SetEmail(user.NormalizedUserName = normalizedName));
+            user.Changes.Add(new SetUserName(user.NormalizedUserName = normalizedName, true));
             return Task.CompletedTask;
         }
 
@@ -538,7 +538,7 @@ namespace Aspnet.Identity.Akka
                 throw new ArgumentNullException(nameof(user));
             }
 
-            user.Changes.Add(new SetUserName(user.UserName = userName));
+            user.Changes.Add(new SetUserName(user.UserName = userName, false));
             return Task.CompletedTask;
         }
 

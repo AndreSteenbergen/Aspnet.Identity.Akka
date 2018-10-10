@@ -35,7 +35,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
         private Dictionary<string, Dictionary<string, HashSet<TKey>>> usersByClaims = new Dictionary<string, Dictionary<string, HashSet<TKey>>>();
 
         //and a reverse lookup
-        private Dictionary<TKey, Tuple<string, string, string, HashSet<ExternalLogin>, HashSet<Claim>>> reverseLookup = new Dictionary<TKey, Tuple<string, string, string, HashSet<ExternalLogin>, HashSet<Claim>>>();
+        private Dictionary<TKey, Tuple<string, string, HashSet<ExternalLogin>, HashSet<Claim>>> reverseLookup = new Dictionary<TKey, Tuple<string, string, HashSet<ExternalLogin>, HashSet<Claim>>>();
 
         private readonly Func<TKey, IActorRef> createUserActor;
         private readonly Func<IActorContext> getContext;
@@ -118,14 +118,16 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                 {
                     case UserNameChanged evt:
                         {
-                            if (existingUserNames.TryGetValue(evt.UserName.ToUpperInvariant(), out TKey otherId) && !otherId.Equals(uu.Key))
+                            if (!evt.Normalized) break;
+                            if (existingUserNames.TryGetValue(evt.UserName, out TKey otherId) && !otherId.Equals(uu.Key))
                             {
                                 errors.Add(new IdentityError { Description = "Duplicate Username found." });
                             }
                         }
                         break;
-                    case NormalizedEmailChanged evt:
+                    case EmailChanged evt:
                         {
+                            if (!evt.Normalized) break;
                             if (existingEmails.TryGetValue(evt.Email, out TKey otherId) && !otherId.Equals(uu.Key))
                             {
                                 errors.Add(new IdentityError { Description = "Duplicate Email found." });
@@ -186,19 +188,12 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             }
         }
 
-        //beware!
-        //race conditions might concur here
-        //maybe lock email/ username somehow, with a timer
+        //is this really necesary? Doesn't Usermanager check this already?
         private IdentityResult TestCreateUser(CreateUser<TKey, TUser> cu)
         {
             var usr = cu.User;
             var errors = new List<IdentityError>();
             if (!string.IsNullOrEmpty(usr.NormalizedUserName) && existingUserNames.ContainsKey(usr.NormalizedUserName)) errors.Add(new IdentityError { Description = "Username already exists" });
-            if (!string.IsNullOrEmpty(usr.UserName) && existingUserNames.ContainsKey(usr.UserName.ToUpperInvariant())) errors.Add(new IdentityError { Description = "Username already exists" });
-            //should be configured in Configure services, not here: e.g. services.Configure<IdentityOptions>(options => { options.User.RequireUniqueEmail = true; })
-            //if (!string.IsNullOrEmpty(usr.NormalizedEmail) && existingEmails.ContainsKey(usr.NormalizedEmail)) errors.Add(new IdentityError { Description = "Email already exists" });
-            //if (string.IsNullOrEmpty(usr.NormalizedEmail) && !string.IsNullOrEmpty(usr.Email) && existingEmails.ContainsKey(usr.Email.ToUpperInvariant()))
-            //    errors.Add(new IdentityError { Description = "Email already exists" });
             if (existingIds.ContainsKey(usr.Id.ToString())) errors.Add(new IdentityError { Description = "UserId already present" });
             if (usr.Logins != null)
             {
@@ -384,7 +379,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                 }
             }
 
-            var (normalizedEmail, normalizedUser, username, logins, claims) = reverseLookup[evt.UserId];
+            var (normalizedEmail, normalizedUser, logins, claims) = reverseLookup[evt.UserId];
             foreach (var claim in claims)
             {
                 claims.RemoveWhere(c => c.Type.Equals(claim.Type) && c.Value.Equals(claim.Value));
@@ -393,7 +388,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
 
         private void HandleEvent(UserClaimsAdded<TKey> evt)
         {
-            var (normalizedEmail, normalizedUser, username, logins, claims) = reverseLookup[evt.UserId];
+            var (normalizedEmail, normalizedUser, logins, claims) = reverseLookup[evt.UserId];
             foreach (var claim in evt.Claims)
             {
                 claims.Add(claim);
@@ -412,20 +407,16 @@ namespace Aspnet.Identity.Akka.ActorHelpers
 
         private void HandleEvent(UserEmailChanged<TKey> evt)
         {
-            if (evt.NormalizedEmail)
-            {
-                var (normalizedEmail, normalizedUser, username, logins, claims) = reverseLookup[evt.UserId];
-                existingEmails.Remove(normalizedEmail);
-                existingEmails[evt.Email] = evt.UserId;
+            var (normalizedEmail, normalizedUser, logins, claims) = reverseLookup[evt.UserId];
+            existingEmails.Remove(normalizedEmail);
+            existingEmails[evt.Email] = evt.UserId;
 
-                reverseLookup[evt.UserId] = new Tuple<string, string, string, HashSet<ExternalLogin>, HashSet<Claim>>(
-                    evt.Email, normalizedUser, username, logins, claims);
-            }
+            reverseLookup[evt.UserId] = new Tuple<string, string, HashSet<ExternalLogin>, HashSet<Claim>>(evt.Email, normalizedUser, logins, claims);            
         }
 
         private void HandleEvent(UserLoginRemoved<TKey> evt)
         {
-            var (normalizedEmail, normalizedUser, username, logins, claims) = reverseLookup[evt.UserId];
+            var (normalizedEmail, normalizedUser, logins, claims) = reverseLookup[evt.UserId];
 
             var login = new ExternalLogin(evt.UserLoginInfo.LoginProvider, evt.UserLoginInfo.ProviderKey);
             existingLogins.Remove(login);
@@ -434,7 +425,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
 
         private void HandleEvent(UserLoginAdded<TKey> evt)
         {
-            var (normalizedEmail, normalizedUser, username, logins, claims) = reverseLookup[evt.UserId];
+            var (normalizedEmail, normalizedUser, logins, claims) = reverseLookup[evt.UserId];
 
             var login = new ExternalLogin(evt.UserLoginInfo.LoginProvider, evt.UserLoginInfo.ProviderKey);
             logins.Add(login);
@@ -443,23 +434,20 @@ namespace Aspnet.Identity.Akka.ActorHelpers
 
         private void HandleEvent(UserNameChanged<TKey> evt)
         {
-            var (normalizedEmail, normalizedUser, username, logins, claims) = reverseLookup[evt.UserId];
+            var (normalizedEmail, normalizedUser, logins, claims) = reverseLookup[evt.UserId];
             existingUserNames.Remove(normalizedUser);
-            existingUserNames.Remove(username);
-
-            existingUserNames[evt.NormalizedUsername] = evt.UserId;
-            existingUserNames[evt.UserName.ToUpperInvariant()] = evt.UserId;
-
-            reverseLookup[evt.UserId] = new Tuple<string, string, string, HashSet<ExternalLogin>, HashSet<Claim>>(
-                normalizedEmail, evt.NormalizedUsername, evt.UserName.ToUpperInvariant(), logins, claims);
+            
+            existingUserNames[evt.UserName] = evt.UserId;
+            
+            reverseLookup[evt.UserId] = new Tuple<string, string, HashSet<ExternalLogin>, HashSet<Claim>>(normalizedEmail, evt.UserName, logins, claims);
         }
 
         private void HandleEvent(UserDeleted<TKey> evt)
         {
-            var (normalizedEmail, normalizedUser, username, logins, claims) = reverseLookup[evt.UserId];
+            var (normalizedEmail, normalizedUser, logins, claims) = reverseLookup[evt.UserId];
             existingEmails.Remove(normalizedEmail);
             existingUserNames.Remove(normalizedUser);
-            existingUserNames.Remove(username);
+            
             foreach (var login in logins)
             {
                 existingLogins.Remove(login);
@@ -489,13 +477,12 @@ namespace Aspnet.Identity.Akka.ActorHelpers
         {
             if (!string.IsNullOrEmpty(evt.NormalizedEmail)) existingEmails[evt.NormalizedEmail] = evt.UserId;
             if (!string.IsNullOrEmpty(evt.NormalizedUserName)) existingUserNames[evt.NormalizedUserName] = evt.UserId;
-            if (!string.IsNullOrEmpty(evt.UserName)) existingUserNames[evt.UserName.ToUpperInvariant()] = evt.UserId;
+            
             existingIds[evt.UserId.ToString()] = evt.UserId;
 
-            reverseLookup[evt.UserId] = new Tuple<string, string, string, HashSet<ExternalLogin>, HashSet<Claim>>(
+            reverseLookup[evt.UserId] = new Tuple<string, string, HashSet<ExternalLogin>, HashSet<Claim>>(
                 evt.NormalizedEmail,
                 evt.NormalizedUserName,
-                evt.UserName.ToUpperInvariant(),
                 new HashSet<ExternalLogin>(),
                 new HashSet<Claim>());
         }
