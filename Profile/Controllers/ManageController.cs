@@ -158,21 +158,20 @@ namespace Profile.Controllers
                     {
                         var idResult = await userManager.SetUserNameAsync(user, saveLoginModel.Username);
                         if (idResult.Errors.Count() > 0) errors.AddRange(idResult.Errors.Select(x => x.Description));
+
+                        if (!(await userManager.HasPasswordAsync(user)))
+                        {
+                            //send password reset link
+                            var code = await userManager.GeneratePasswordResetTokenAsync(user);
+                            var callbackUrl = Url.Action(nameof(AccountController.ResetPassword), "Account", new { userId = user.Id, code }, protocol: HttpContext.Request.Scheme);
+                            await emailSender.SendEmailAsync(user.Email, "Wachtwoord instellen", $"Tot voor kort gebruikte u alleen een externe inlogmogelijkheid, zonder wachtwoord. Om in te loggen met uw gebruikersnaam heeft u ook een wachtwoord nodig. U kunt uw wachtwoord instellen door op de volgende link te klikken: <a href='{callbackUrl}'>link</a>.");
+                        }
                     }
                     if (!string.IsNullOrEmpty(saveLoginModel.Password))
                     {
-                        if (string.IsNullOrEmpty(user.PasswordHash))
-                        {
-                            var token = await userManager.GeneratePasswordResetTokenAsync(user);
-                            var idResult = await userManager.ResetPasswordAsync(user, token, saveLoginModel.Password);
-                            if (idResult.Errors.Count() > 0) errors.AddRange(idResult.Errors.Select(x => x.Description));
-                        }
-                        else
-                        {
-                            //try and set password
-                            var idResult = await userManager.ChangePasswordAsync(user, saveLoginModel.CurrentPassword, saveLoginModel.Password);
-                            if (idResult.Errors.Count() > 0) errors.AddRange(idResult.Errors.Select(x => x.Description));
-                        }
+                        //try and set password
+                        var idResult = await userManager.ChangePasswordAsync(user, saveLoginModel.CurrentPassword, saveLoginModel.Password);
+                        if (idResult.Errors.Count() > 0) errors.AddRange(idResult.Errors.Select(x => x.Description));                        
                     }
                 }
                 else

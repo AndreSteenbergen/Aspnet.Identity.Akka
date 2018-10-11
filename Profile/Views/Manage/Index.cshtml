@@ -8,6 +8,7 @@
         <div class="pure-u-1">
             <div class="box">
                 <hgroup>
+                    <img class="h2group" src="~/images/@(tenant.Id)_logo.png" />
                     <h2>@(tenant.Name)</h2>
                     <h3>Accountbeheer</h3>
                 </hgroup>
@@ -84,28 +85,28 @@
                         <input asp-for="Email" placeholder="Emailadres" />
                         <label>Emailadres <span>aanpassen email nog niet mogelijk</span></label>
                     </div>
-                    
-                    <p>Wachtwoord aanpassen</p>
+
                     @if (Model.HasPassword)
                     {
-                    <div class="inputbox withicon">
-                        <i class="fas fa-lock"></i>
-                        <input asp-for="CurrentPassword" placeholder="Huidig wachtwoord" />
-                        <label>Huidig wachtwoord</label>
-                    </div>
+                        <p>Wachtwoord aanpassen</p>
+                        <div class="inputbox withicon">
+                            <i class="fas fa-lock"></i>
+                            <input asp-for="CurrentPassword" placeholder="Huidig wachtwoord" />
+                            <label>Huidig wachtwoord</label>
+                        </div>
+
+                        <div class="inputbox withicon">
+                            <i class="fas fa-lock"></i>
+                            <input asp-for="Password" placeholder="Wachtwoord" />
+                            <label>Wachtwoord</label>
+                        </div>
+
+                        <div class="inputbox withicon">
+                            <i class="fas fa-lock"></i>
+                            <input asp-for="ConfirmPassword" placeholder="Herhaal wachtwoord" />
+                            <label>Herhaal wachtwoord</label>
+                        </div>
                     }
-
-                    <div class="inputbox withicon">
-                        <i class="fas fa-lock"></i>
-                        <input asp-for="Password" placeholder="Wachtwoord" />
-                        <label>Wachtwoord</label>
-                    </div>
-
-                    <div class="inputbox withicon">
-                        <i class="fas fa-lock"></i>
-                        <input asp-for="ConfirmPassword" placeholder="Herhaal wachtwoord" />
-                        <label>Herhaal wachtwoord</label>
-                    </div>
 
                     <input type="submit" value="Opslaan" />
                 </form>
