@@ -552,7 +552,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
 
             if (evt.Normalized)
             {
-                coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserNameChanged<TKey>(userId, user.UserName)));
+                coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserNameChanged<TKey>(userId, evt.UserName)));
             }
         }
 
