@@ -5,6 +5,8 @@ Aspnet.Identity.Akka
 
 no guarantees, this repository is provided as is, to demonstrate how on identity store could be made with Akka as data provider. Still a lot of work in progress. Need to move away from the helpers, removing the receiveactor. Using configuration to call an external persister (as in the current example), or use the regular Persister. No need for 2 actor types.
 
+Added the google authentication from the example found on http://docs.identityserver.io/en/release/quickstarts/4_external_authentication.html
+
 Example ConfigureServices creating a fast and simple first setup (with a forget always actor system)
 ```
 public void ConfigureServices(IServiceCollection services)
