@@ -408,7 +408,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                 return true;
             }
 
-            var claimsToRemove = user.Claims.Union(evt.Claims, ClaimComparer.Instance).ToList();
+            var claimsToRemove = user.Claims.Intersect(evt.Claims, ClaimComparer.Instance).ToList();
             if (claimsToRemove.Count > 0)
             {
                 e = new ClaimsRemoved(claimsToRemove);
@@ -647,7 +647,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
 
         private void HandleEvent(IActorRef _, ClaimsRemoved evt)
         {
-            var claimsToRemove = user.Claims.Union(evt.ClaimsToRemove, ClaimComparer.Instance).ToList();
+            var claimsToRemove = user.Claims.Intersect(evt.ClaimsToRemove, ClaimComparer.Instance).ToList();
             foreach (var claim in claimsToRemove)
             {
                 user.Claims.Remove(claim);
