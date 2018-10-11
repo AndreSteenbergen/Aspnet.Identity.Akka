@@ -61,7 +61,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                     sender.Tell(user?.Logins ?? new ImmutableUserLoginInfo[0]);
                     break;
                 case ReturnDetails req:
-                    sender.Tell(user == null ? (object) NilMessage.Instance : user);
+                    sender.Tell(user == null ? NilMessage.Instance : user.Clone()); //never ever give internal user to the bad outside world!
                     break;
             }
         }
