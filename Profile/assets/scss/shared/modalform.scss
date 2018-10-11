@@ -17,226 +17,229 @@
             text-align: center;
         }
 
-        hgroup {
-            margin: -15px -15px 30px -15px;
-            padding: 15px;
-            background: linear-gradient(to bottom, rgba($secondary, 0.1) 75%, rgba($secondary, 0.2) 100%);
-
-            img {
-                float: left;
-                width: 8rem;
-                height: 6rem;
-                margin-right: 1rem;
-                object-fit: contain;
-            }
-
-            h1, h2 {
-                margin: 0;
-            }
-
-            h1 {
-                font-size: 2.5em;
-            }
-
-            h2 {
-                font-size: 1.75em;
-            }
-
-            &:after {
-                content: '';
-                display: block;
-                clear: both;
-            }
-        }
-
-        &.small {
-            .inputbox {
-                margin-bottom: 1.5ex;
-
-                input {
-                    padding: 7px 0;
-                    font-size: 12px;
-
-                    &:focus ~ label {
-                        top: -15px;
-                        left: 0;
-                        font-size: 10px;
-                        color: $secondary;
-                    }
-
-                    &:not(:placeholder-shown) ~ label { //werkt niet in edge
-                        top: -15px;
-                        left: 0;
-                        font-size: 10px;
-                        color: $secondary;
-                    }
-                }
-
-                label {
-                    padding: 7px 0;
-                    font-size: 12px;
-                }
-
-                .far, .fas {
-                    top: 8px;
-                    font-size: 14px;
-                }
-            }
-        }
-
-
         form {
             @include breakpoint($md) {
                 padding: 0 20px;
             }
+        }
+    }
 
-            .inputbox {
-                position: relative;
-                margin-bottom: 30px;
+    hgroup {
+        margin: -15px -15px 15px -15px;
+        padding: 15px;
+        background: linear-gradient(to bottom, rgba($secondary, 0.1) 75%, rgba($secondary, 0.2) 100%);
 
-                &.withicon input {
-                    padding-left: 20px;
-                }
-
-                input {
-                    width: 100%;
-                    padding: 10px 0;
-                    font-size: 16px;
-                    outline: none;
-                    box-shadow: none;
-                    border: none;
-                    border-bottom: 1px solid $secondary;
-                    background: transparent;
-
-                    &::-webkit-input-placeholder {
-                        color: transparent !important;
-                    }
-
-                    &:-moz-placeholder {
-                        color: transparent !important;
-                    }
-
-                    &::-moz-placeholder {
-                        color: transparent !important;
-                    }
-
-                    &:-ms-input-placeholder {
-                        color: transparent !important;
-                    }
-
-                    &:focus ~ label {
-                        top: -20px;
-                        left: 0;
-                        font-size: 12px;
-                        color: $secondary;
-                    }
-
-                    &:not(:placeholder-shown) ~ label { //werkt niet in edge
-                        top: -20px;
-                        left: 0;
-                        font-size: 12px;
-                        color: $secondary;
-                    }
-
-                    &.input-validation-error ~ label {
-                        color: red;
-                    }
-                }
-
-                &.withicon label {
-                    left: 20px;
-                }
-
-                label {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    padding: 10px 0;
-                    font-size: 16px;
-                    pointer-events: none;
-                    transition: 0.4s;
-
-                    span {
-                        color : red;
-                    }
-                }
-
-                .far, .fas {
-                    position: absolute;
-                    top: 13px;
-                    left: 0;
-                    font-size: 16px;
-                }
-            }
-
-            .forgotpassword {
-                margin-top: 0;
-                text-align: right;
-            }
-
-            input[type='submit'] {
-                display: block;
-                margin: auto;
-                border: 2px solid $secondary;
-                padding: 3px 2em;
-                background: white;
-
-                &:active {
-                    border: 2px solid darken($secondary, 20%);
-                    padding-top: 4px;
-                    padding-bottom: 2px;
-                }
-            }
+        img {
+            float: left;
+            width: 8rem;
+            height: 6rem;
+            margin-right: 1rem;
+            object-fit: contain;
         }
 
-        .sociallogins {
-            display: flex;
-            justify-content: center;
+        h1, h2, h3 {
+            margin: 0;
+        }
 
-            .socialButton {
-                margin: 0 10px;
-                text-align: center;
-                line-height: 9px;
+        h1 {
+            font-size: 2.5em;
+        }
+
+        h2 {
+            font-size: 1.75em;
+        }
+
+        &:after {
+            content: '';
+            display: block;
+            clear: both;
+        }
+    }
+
+    .small {
+        .inputbox {
+            margin-bottom: 1.5ex;
+
+            input {
+                padding: 7px 0;
+                font-size: 12px;
+
+                &:focus ~ label {
+                    top: -15px;
+                    left: 0;
+                    font-size: 10px;
+                    color: $secondary;
+                }
+
+                &:not(:placeholder-shown) ~ label { //werkt niet in edge
+                    top: -15px;
+                    left: 0;
+                    font-size: 10px;
+                    color: $secondary;
+                }
             }
 
-            button {
-                display: block;
-                width: 40px;
-                height: 40px;
+            label {
+                padding: 7px 0;
+                font-size: 12px;
+            }
+
+            .far, .fas {
+                top: 8px;
+                font-size: 14px;
+            }
+        }
+    }
+
+
+    form {
+        .inputbox {
+            position: relative;
+            margin-bottom: 30px;
+
+            &.withicon input {
+                padding-left: 20px;
+            }
+
+            input {
+                width: 100%;
+                padding: 10px 0;
+                font-size: 16px;
+                outline: none;
+                box-shadow: none;
                 border: none;
-                border-radius: 50%;
-                color: white;
-                font-size: 20px;
+                border-bottom: 1px solid $secondary;
+                background: transparent;
+
+                &::-webkit-input-placeholder {
+                    color: transparent !important;
+                }
+
+                &:-moz-placeholder {
+                    color: transparent !important;
+                }
+
+                &::-moz-placeholder {
+                    color: transparent !important;
+                }
+
+                &:-ms-input-placeholder {
+                    color: transparent !important;
+                }
+
+                &:focus ~ label {
+                    top: -20px;
+                    left: 0;
+                    font-size: 12px;
+                    color: $secondary;
+                }
+
+                &:not(:placeholder-shown) ~ label { //werkt niet in edge
+                    top: -20px;
+                    left: 0;
+                    font-size: 12px;
+                    color: $secondary;
+                }
+
+                &.input-validation-error ~ label {
+                    color: red;
+                }
             }
 
-            span {
-                font-size: 10px;
+            &.withicon label {
+                left: 20px;
+            }
+
+            label {
+                position: absolute;
+                top: 0;
+                left: 0;
+                padding: 10px 0;
+                font-size: 16px;
+                pointer-events: none;
+                transition: 0.4s;
+
+                span {
+                    color: red;
+                }
+            }
+
+            .far, .fas {
+                position: absolute;
+                top: 13px;
+                left: 0;
+                font-size: 16px;
             }
         }
 
-        .noLogin {
-            margin-top: 40px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .forgotpassword {
+            margin-top: 0;
+            text-align: right;
+        }
 
-            a {
-                color : inherit;
-                display: block;
-                margin-left: 1ex;
-                border: 2px solid $secondary;
-                padding: 3px 2em;
-                background: white;
+        input[type='submit'] {
+            display: block;
+            margin: auto;
+            border: 2px solid $secondary;
+            padding: 3px 2em;
+            background: white;
 
-                &:active {
-                    border: 2px solid darken($secondary, 20%);
-                    padding-top: 4px;
-                    padding-bottom: 2px;
-                }
+            &:active {
+                border: 2px solid darken($secondary, 20%);
+                padding-top: 4px;
+                padding-bottom: 2px;
+            }
+        }
+    }
 
-                &:hover {
-                    text-decoration : none;
-                }
+    .sociallogins {
+        display: flex;
+        justify-content: center;
+
+        .socialButton {
+            margin: 0 10px;
+            text-align: center;
+            line-height: 9px;
+        }
+
+        button {
+            display: block;
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            margin: auto;
+        }
+
+        span {
+            font-size: 10px;
+        }
+    }
+
+    .noLogin {
+        margin-top: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        a {
+            color: inherit;
+            display: block;
+            margin-left: 1ex;
+            border: 2px solid $secondary;
+            padding: 3px 2em;
+            background: white;
+
+            &:active {
+                border: 2px solid darken($secondary, 20%);
+                padding-top: 4px;
+                padding-bottom: 2px;
+            }
+
+            &:hover {
+                text-decoration: none;
             }
         }
     }

@@ -28,6 +28,12 @@
     <Content Update="Views\Account\ExternalLoginConfirmation.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\Account\ExternalLoginFailure.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Account\Lockout.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Account\ResetPasswordConfirmation.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

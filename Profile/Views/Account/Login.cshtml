@@ -2,6 +2,7 @@
 @inject TenantContext tenant
 @{
     ViewData["Title"] = "Login";
+    var loginConfigured = (Dictionary<string, Dictionary<string,string>>) tenant.Items[Profile.Tenant.Constants.SOCIALLOGINS];
 }
 
 <div class="modalform">
@@ -37,7 +38,7 @@
 
     <form class="sociallogins" asp-controller="Account" asp-action="ExternalLogin" asp-route-returnurl="@Model.ReturnUrl" method="post">
         @Html.HiddenFor(x => x.ReturnUrl)
-        @foreach (var loginProvider in SocialLoginProvider.Instance.Get)
+        @foreach (var loginProvider in SocialLoginProvider.Instance.Get.Where(x => loginConfigured.ContainsKey(x.Key)))
         {
             <div class="socialButton">
                 <button type="submit" name="provider" value="@loginProvider.Key" style="background-color: @loginProvider.HexColor">

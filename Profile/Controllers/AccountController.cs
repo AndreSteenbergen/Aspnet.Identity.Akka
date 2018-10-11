@@ -120,7 +120,7 @@ namespace Profile.Controllers
                     var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
                     var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code }, protocol: HttpContext.Request.Scheme);
                     await emailSender.SendEmailAsync(model.Email, $"Welkom bij {tenantContext.Name}", $"Om gebruik te maken van uw ${tenantContext.Name} account moet u uw email adres bevestigen. Gebruik daarvoor deze link: <a href='{callbackUrl}'>Activeer nu</a>");
-                                        
+
                     return View("Registered");
                 }
                 AddErrors(result);
@@ -159,7 +159,7 @@ namespace Profile.Controllers
             {
                 LogoutId = model.LogoutId
             };
-            
+
             await signInManager.SignOutAsync();
             return View("LoggedOut", vm);
         }
@@ -201,7 +201,7 @@ namespace Profile.Controllers
 
                 var code = await userManager.GeneratePasswordResetTokenAsync(user);
                 var callbackUrl = Url.Action(nameof(AccountController.ResetPassword), "Account", new { userId = user.Id, code }, protocol: HttpContext.Request.Scheme);
-                await emailSender.SendEmailAsync(model.Email, "Wachtwoord resetten",  $"U kunt uw wachtwoord resetten door op de volgende link te klikken: <a href='{callbackUrl}'>link</a>.");
+                await emailSender.SendEmailAsync(model.Email, "Wachtwoord resetten", $"U kunt uw wachtwoord resetten door op de volgende link te klikken: <a href='{callbackUrl}'>link</a>.");
 
                 return RedirectToAction(nameof(AccountController.WachtwoordVergetenBevestiging), "Account");
             }
@@ -289,7 +289,7 @@ namespace Profile.Controllers
             }
             if (result.RequiresTwoFactor)
             {
-//    return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl });
+                //    return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl });
             }
             if (result.IsLockedOut)
             {
@@ -320,6 +320,12 @@ namespace Profile.Controllers
         {
             if (ModelState.IsValid && model.Required.All(x => !string.IsNullOrEmpty(x.Value)))
             {
+                var info = await signInManager.GetExternalLoginInfoAsync();
+                if (info == null)
+                {
+                    return View("ExternalLoginFailure");
+                }
+
                 var user = new ApplicationUser(Guid.NewGuid())
                 {
                     UserName = Guid.NewGuid().ToString(),
@@ -329,6 +335,8 @@ namespace Profile.Controllers
                 var result = await userManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
+                    await userManager.AddLoginAsync(user, info);
+
                     var claims = new List<Claim>();
                     foreach (var required in model.Required.Where(x => !string.IsNullOrEmpty(x.Value)))
                     {
@@ -338,12 +346,18 @@ namespace Profile.Controllers
                     {
                         claims.Add(new Claim(optional.ClaimType, optional.Value));
                     }
+
+                    var phoneClaim = claims.Find(x => x.Type.Equals(ClaimTypes.MobilePhone));
+                    if (phoneClaim != default(Claim))
+                    {
+                        await userManager.SetPhoneNumberAsync(user, phoneClaim.Value);
+                    }
                     await userManager.AddClaimsAsync(user, claims);
 
                     // Send an email with this link
                     var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
                     var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code }, protocol: HttpContext.Request.Scheme);
-                    await emailSender.SendEmailAsync(model.Email, $"Welkom bij {tenantContext.Name}", $"Om gebruik te maken van uw ${tenantContext.Name} account moet u uw email adres bevestigen. Gebruik daarvoor deze link: <a href='{callbackUrl}'>Activeer nu</a>");
+                    await emailSender.SendEmailAsync(model.Email, $"Welkom bij {tenantContext.Name}", $"Om gebruik te maken van uw {tenantContext.Name} account moet u uw email adres bevestigen. Gebruik daarvoor deze link: <a href='{callbackUrl}'>Activeer nu</a>");
 
                     return View("Registered");
                 }
@@ -370,6 +384,6 @@ namespace Profile.Controllers
             {
                 return RedirectToAction(nameof(ManageController.Index), "Manage");
             }
-        }        
+        }
     }
 }

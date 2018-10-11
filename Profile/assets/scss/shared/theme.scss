@@ -27,12 +27,29 @@
 
     a {
         color: inherit;
-        transition:0.2s;
-        text-decoration:none;
+        transition: 0.2s;
+        text-decoration: none;
 
         &:hover {
-            color : $secondary;
-            text-decoration:underline;
+            color: $secondary;
+            text-decoration: underline;
+        }
+    }
+
+    main > .container:first-child {
+        margin-top: 3em;
+    }
+
+    .container {
+        margin: 0 auto;
+        padding: 0 2em;
+        max-width: 1000px;
+
+        .box {
+            margin:1ex;
+            padding: 15px;
+            background: rgba(#fff, 0.7);
+            border-radius: 5px;
         }
     }
 
