@@ -8,6 +8,7 @@ using Aspnet.Identity.Akka.Model;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 
 namespace Aspnet.Identity.Akka.ActorHelpers
@@ -380,7 +381,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             }
 
             var (normalizedEmail, normalizedUser, logins, claims) = reverseLookup[evt.UserId];
-            foreach (var claim in claims)
+            foreach (var claim in claims.ToList())
             {
                 claims.RemoveWhere(c => c.Type.Equals(claim.Type) && c.Value.Equals(claim.Value));
             }
