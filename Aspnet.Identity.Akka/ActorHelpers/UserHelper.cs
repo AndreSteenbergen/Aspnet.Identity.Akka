@@ -387,7 +387,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             }
 
             var login = user.Logins.FirstOrDefault(x => x.LoginProvider.Equals(evt.LoginProvider) && x.ProviderKey.Equals(evt.ProviderKey));
-            if (login == default(ImmutableUserLoginInfo))
+            if (login != default(ImmutableUserLoginInfo))
             {
                 e = new LoginRemoved(evt.LoginProvider, evt.ProviderKey);
             }
@@ -642,7 +642,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             }
             if (!inSync) return;
 
-            coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserLoginRemoved<TKey>(userId, new ImmutableUserLoginInfo(evt.LoginProvider, evt.LoginProvider, string.Empty))));
+            coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new ActorMessages.UserCoordinator.UserLoginRemoved<TKey>(userId, new ImmutableUserLoginInfo(evt.LoginProvider, evt.ProviderKey, string.Empty))));
         }
 
         private void HandleEvent(IActorRef _, ClaimsRemoved evt)
