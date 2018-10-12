@@ -303,7 +303,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                     return;
                 }
             }
-            sender.Tell(new TUser[0]);
+            sender.Tell(new AggregatedReply<TUser>(new TUser[0]));
         }
 
         private void ForwardUserRequests(TKey userId, IGetUserProperties req, IActorRef sender)

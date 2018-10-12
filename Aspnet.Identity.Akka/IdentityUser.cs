@@ -37,7 +37,12 @@ namespace Aspnet.Identity.Akka
         public object Clone()
         {
             //memberwise clone
-            var obj = MemberwiseClone();
+            var obj = MemberwiseClone() as IdentityUser<TKey>;
+
+            //all lists need to be deep copied, because when mutated, the original list is mutated
+            if (Claims != null) obj.Claims = new List<Claim>(Claims);
+            if (Logins != null) obj.Logins = new List<ImmutableUserLoginInfo>(Logins);
+            if (Tokens != null) obj.Tokens = new List<ImmutableIdentityUserToken<TKey>>(Tokens);
 
             return obj;
         }
