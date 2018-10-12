@@ -7,6 +7,11 @@ namespace Profile.Models
 {
     public class ApplicationUser : IdentityUser<Guid>
     {
+        public ApplicationUser() : this(Guid.NewGuid())
+        {
+            
+        }
+
         public ApplicationUser(Guid id) : base(id)
         {
         }

@@ -12,6 +12,8 @@
     </hgroup>
 
     <form asp-controller="Account" asp-action="Registreer" asp-route-returnurl="@Model.ReturnUrl" method="post">
+        <div asp-validation-summary="All" class="text-danger"></div>
+
         <div class="inputbox withicon">
             <i class="far fa-user"></i>
             <input asp-for="Username" placeholder="Gebruikersnaam" />

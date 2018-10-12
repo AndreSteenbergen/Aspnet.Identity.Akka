@@ -563,8 +563,8 @@ namespace Aspnet.Identity.Akka
 
         public async Task<IList<TUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken)
         {
-            var rst = await userCoordinator.Ask<IEnumerable<TUser>>(new FindByClaim(claim.Type, claim.Value), cancellationToken);
-            return rst as List<TUser> ?? rst.ToList();
+            var rst = await userCoordinator.Ask<AggregatedReply<TUser>>(new FindByClaim(claim.Type, claim.Value), cancellationToken);
+            return rst as List<TUser> ?? rst.Rst.ToList();
         }
 
         public async Task<string> GetTokenAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken)

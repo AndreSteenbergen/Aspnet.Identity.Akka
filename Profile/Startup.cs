@@ -17,10 +17,6 @@ using Aspnet.Identity.Akka.Actors;
 using Akka.Actor;
 using Akka.Configuration;
 using System.IO;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.AspNetCore.Authentication;
-using Finbuckle.MultiTenant.AspNetCore;
 
 namespace Profile
 {
@@ -52,12 +48,6 @@ namespace Profile
             services.ConfigurePOCO<List<TenantConfiguration>>(Configuration.GetSection("TenantConfigurations"));
             services.Configure<RazorViewEngineOptions>(options => options.ViewLocationExpanders.Add(new TenantViewLocationExpander()));
 
-            services.AddSingleton<IMultiTenantStore>((serviceProvider) =>
-            {
-                var cfg = serviceProvider.GetService<List<TenantConfiguration>>();
-                return new TenantResolver(cfg.ToArray());
-            });
-            
             services.AddCalqoDefaultIdentity<ApplicationUser>(o =>
                 {
                     o.User.RequireUniqueEmail = true;
@@ -65,9 +55,9 @@ namespace Profile
                 })
                 .AddUserStore();
 
+            services.AddSingleton<IMultiTenantStore>((serviceProvider) => new TenantResolver(serviceProvider.GetService<List<TenantConfiguration>>()));
             services.AddMultiTenant()
                 .WithStrategy<TenantStrategy>()
-                .AddPerTenantCookieAuthentication()
                 .AddPerTenantSocialLogins();
 
             services.AddTransient<IEmailSender, AuthMessageSender>();

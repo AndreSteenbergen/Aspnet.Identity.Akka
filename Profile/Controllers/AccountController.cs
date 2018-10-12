@@ -119,7 +119,7 @@ namespace Profile.Controllers
                     // Send an email with this link
                     var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
                     var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code }, protocol: HttpContext.Request.Scheme);
-                    await emailSender.SendEmailAsync(model.Email, $"Welkom bij {tenantContext.Name}", $"Om gebruik te maken van uw ${tenantContext.Name} account moet u uw email adres bevestigen. Gebruik daarvoor deze link: <a href='{callbackUrl}'>Activeer nu</a>");
+                    await emailSender.SendEmailAsync(model.Email, $"Welkom bij {tenantContext.Name}", $"Om gebruik te maken van uw {tenantContext.Name} account moet u uw email adres bevestigen. Gebruik daarvoor deze link: <a href='{callbackUrl}'>Activeer nu</a>");
 
                     return View("Registered");
                 }
@@ -338,6 +338,8 @@ namespace Profile.Controllers
                     await userManager.AddLoginAsync(user, info);
 
                     var claims = new List<Claim>();
+                    claims.Add(info.Principal.FindFirst(ClaimTypes.NameIdentifier));
+
                     foreach (var required in model.Required.Where(x => !string.IsNullOrEmpty(x.Value)))
                     {
                         claims.Add(new Claim(required.ClaimType, required.Value));

@@ -3,6 +3,7 @@ using Finbuckle.MultiTenant.Core.Abstractions;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -26,9 +27,9 @@ namespace Profile.Tenant
         private readonly TenantConfiguration[] tenantConfigurations;
         private readonly Dictionary<string, TenantContext> hostConfigurations = new Dictionary<string, TenantContext>();
 
-        public TenantResolver(TenantConfiguration[] tenantConfigurations)
+        public TenantResolver(IEnumerable<TenantConfiguration> tenantConfigurations)
         {
-            this.tenantConfigurations = tenantConfigurations;
+            this.tenantConfigurations = tenantConfigurations.ToArray();
         }
 
         public Task<TenantContext> GetByIdentifierAsync(string identifier)
