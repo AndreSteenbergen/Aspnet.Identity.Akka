@@ -2,7 +2,7 @@
 
 namespace Aspnet.Identity.Akka.ActorMessages.User
 {
-    class PasswordHashChanged : IEvent
+    public class PasswordHashChanged : IEvent
     {
         public PasswordHashChanged(string passwordHash)
         {

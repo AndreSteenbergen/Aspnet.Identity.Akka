@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace Aspnet.Identity.Akka.ActorMessages.UserCoordinator
 {
-    class UserClaimsRemoved<TKey> : IEvent
+    public class UserClaimsRemoved<TKey> : IEvent
         where TKey : IEquatable<TKey>
     {
         public UserClaimsRemoved(TKey userId, IEnumerable<Claim> claims)

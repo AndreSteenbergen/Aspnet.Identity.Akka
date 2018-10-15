@@ -5,7 +5,7 @@ using System.Security.Claims;
 
 namespace Aspnet.Identity.Akka.ActorMessages.User
 {
-    class ClaimsRemoved : IEvent
+    public class ClaimsRemoved : IEvent
     {
         public ClaimsRemoved(IEnumerable<Claim> claimsToRemove)
         {

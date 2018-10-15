@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Aspnet.Identity.Akka.Serialization.MsgPack\Aspnet.Identity.Akka.Serialization.MsgPack.csproj" />
     <ProjectReference Include="..\Aspnet.Identity.Akka\Aspnet.Identity.Akka.csproj" />
   </ItemGroup>
 

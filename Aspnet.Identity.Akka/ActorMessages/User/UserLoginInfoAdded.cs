@@ -3,7 +3,7 @@ using Aspnet.Identity.Akka.Model;
 
 namespace Aspnet.Identity.Akka.ActorMessages.User
 {
-    class UserLoginInfoAdded : IEvent
+    public class UserLoginInfoAdded : IEvent
     {
         public UserLoginInfoAdded(ImmutableUserLoginInfo userloginInfo)
         {

@@ -3,7 +3,7 @@ using System;
 
 namespace Aspnet.Identity.Akka.ActorMessages.User
 {
-    class LockoutEndDateChanged : IEvent
+    public class LockoutEndDateChanged : IEvent
     {
         public LockoutEndDateChanged(DateTimeOffset? lockoutEnd)
         {

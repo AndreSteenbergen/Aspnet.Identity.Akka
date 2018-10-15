@@ -3,7 +3,7 @@ using System;
 
 namespace Aspnet.Identity.Akka.ActorMessages.UserCoordinator
 {
-    class UserNameChanged<TKey> : IEvent
+    public class UserNameChanged<TKey> : IEvent
         where TKey : IEquatable<TKey>
     {
         public UserNameChanged(TKey userId, string userName)

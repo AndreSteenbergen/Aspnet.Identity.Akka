@@ -2,7 +2,7 @@
 
 namespace Aspnet.Identity.Akka.ActorMessages.User
 {
-    class TokenRemoved : IEvent
+    public class TokenRemoved : IEvent
     {
         public TokenRemoved(string loginProvider, string name)
         {

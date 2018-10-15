@@ -2,17 +2,14 @@
 
 namespace Aspnet.Identity.Akka.Model
 {
-    public class ImmutableIdentityUserToken<TKey> where TKey : IEquatable<TKey>
+    public class ImmutableIdentityUserToken
     {
-        public ImmutableIdentityUserToken(TKey userId, string loginProvider, string name, string value)
+        public ImmutableIdentityUserToken(string loginProvider, string name, string value)
         {
-            UserId = userId;
             LoginProvider = loginProvider;
             Name = name;
             Value = value;
         }
-
-        public TKey UserId { get; }
         public string LoginProvider { get; }
         public string Name { get; }
         public string Value { get; }

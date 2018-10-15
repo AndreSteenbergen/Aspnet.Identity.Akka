@@ -2,7 +2,7 @@
 
 namespace Aspnet.Identity.Akka.ActorMessages.User
 {
-    class PhoneNumberChanged : IEvent
+    public class PhoneNumberChanged : IEvent
     {
         public PhoneNumberChanged(string phoneNumber)
         {

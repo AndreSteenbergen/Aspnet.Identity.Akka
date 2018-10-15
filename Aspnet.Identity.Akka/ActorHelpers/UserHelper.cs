@@ -55,7 +55,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                     sender.Tell(user?.Claims ?? new Claim[0]);
                     break;
                 case RequestTokens<TKey> req:
-                    sender.Tell(user?.Tokens ?? new ImmutableIdentityUserToken<TKey>[0]);
+                    sender.Tell(user?.Tokens ?? new ImmutableIdentityUserToken[0]);
                     break;
                 case RequestUserLoginInfo<TKey> req:
                     sender.Tell(user?.Logins ?? new ImmutableUserLoginInfo[0]);
@@ -116,12 +116,14 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             evt.User.Changes.Clear();
             sender.Tell(IdentityResult.Success);
         }
-
+        
         private bool TestCommand(IUserPropertyChange change, out IEvent e)
         {
             switch (change)
             {
                 case AddClaims evt:
+                    return TestCommand(evt, out e);
+                case SetAccessFailesCount evt:
                     return TestCommand(evt, out e);
                 case AddUserLoginInfo evt:
                     return TestCommand(evt, out e);
@@ -208,8 +210,8 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             }
             else
             {
-                ImmutableIdentityUserToken<TKey> token = user.Tokens.FirstOrDefault(x => x.LoginProvider.Equals(evt.LoginProvider) && x.Name.Equals(evt.Name));
-                if (token == default(ImmutableIdentityUserToken<TKey>))
+                ImmutableIdentityUserToken token = user.Tokens.FirstOrDefault(x => x.LoginProvider.Equals(evt.LoginProvider) && x.Name.Equals(evt.Name));
+                if (token == default(ImmutableIdentityUserToken))
                 {
                     e = new TokenAdded(evt.LoginProvider, evt.Name, evt.Value);
                 }
@@ -365,7 +367,7 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             }
 
             var token = user.Tokens.FirstOrDefault(x => x.LoginProvider.Equals(evt.LoginProvider) && x.Name.Equals(evt.Name));
-            if (token != default(ImmutableIdentityUserToken<TKey>))
+            if (token != default(ImmutableIdentityUserToken))
             {
                 e = new TokenRemoved(evt.LoginProvider, evt.Name);
             }
@@ -414,6 +416,20 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                 e = new ClaimsRemoved(claimsToRemove);
             }
 
+            return true;
+        }
+
+        private bool TestCommand(SetAccessFailesCount evt, out IEvent e)
+        {
+            e = null;
+            if (user == null)
+            {
+                return false;
+            }
+            if (user.AccessFailedCount != evt.AccessFailedCount)
+            {
+                e = new AccessFailedCountChanged(evt.AccessFailedCount);
+            }
             return true;
         }
 
@@ -471,6 +487,9 @@ namespace Aspnet.Identity.Akka.ActorHelpers
                     sender.Tell(IdentityResult.Success);
                     coordinator.Tell(new ActorMessages.UserCoordinator.NotifyUserEvent(new UserDeleted<TKey>(userId)));
                     return;
+                case AccessFailedCountChanged evt:
+                    HandleEvent(sender, evt);
+                    return;
                 case ClaimsAdded evt:
                     HandleEvent(sender, evt);
                     return;
@@ -525,6 +544,11 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             }
         }
 
+        private void HandleEvent(IActorRef _, AccessFailedCountChanged evt)
+        {
+            user.AccessFailedCount = evt.AccessFailedCount;
+        }
+
         private void HandleEvent(IActorRef sender, UserCreated<TKey, TUser> evt)
         {
             user = evt.User;
@@ -568,13 +592,13 @@ namespace Aspnet.Identity.Akka.ActorHelpers
             {
                 user.Tokens.Remove(tkn);
             }
-            user.Tokens.Add(new ImmutableIdentityUserToken<TKey>(userId, evt.LoginProvider, evt.Name, evt.Value));
+            user.Tokens.Add(new ImmutableIdentityUserToken(evt.LoginProvider, evt.Name, evt.Value));
         }
 
         private void HandleEvent(IActorRef _, TokenAdded evt)
         {
-            (user.Tokens ?? (user.Tokens = new List<ImmutableIdentityUserToken<TKey>>()))
-                .Add(new ImmutableIdentityUserToken<TKey>(userId, evt.LoginProvider, evt.Name, evt.Value));
+            (user.Tokens ?? (user.Tokens = new List<ImmutableIdentityUserToken>()))
+                .Add(new ImmutableIdentityUserToken(evt.LoginProvider, evt.Name, evt.Value));
         }
 
         private void HandleEvent(IActorRef _, SecurityStampChanged evt)

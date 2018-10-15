@@ -2,7 +2,7 @@
 
 namespace Aspnet.Identity.Akka.ActorMessages.User
 {
-    class UserDeleted : IEvent
+    public class UserDeleted : IEvent
     {
 
     }

@@ -2,7 +2,7 @@
 
 namespace Aspnet.Identity.Akka.ActorMessages.User
 {
-    class UserNameChanged : IEvent
+    public class UserNameChanged : IEvent
     {
         public UserNameChanged(string userName, bool normalized)
         {

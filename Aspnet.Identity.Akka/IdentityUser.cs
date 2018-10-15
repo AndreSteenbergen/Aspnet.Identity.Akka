@@ -30,7 +30,7 @@ namespace Aspnet.Identity.Akka
         public int AccessFailedCount { get; set; }
         public IList<Claim> Claims { get; set; }
         public IList<ImmutableUserLoginInfo> Logins { get; set; }
-        public IList<ImmutableIdentityUserToken<TKey>> Tokens { get; set; }
+        public IList<ImmutableIdentityUserToken> Tokens { get; set; }
 
         internal IList<IUserPropertyChange> Changes { get; } = new List<IUserPropertyChange>();
 
@@ -42,7 +42,7 @@ namespace Aspnet.Identity.Akka
             //all lists need to be deep copied, because when mutated, the original list is mutated
             if (Claims != null) obj.Claims = new List<Claim>(Claims);
             if (Logins != null) obj.Logins = new List<ImmutableUserLoginInfo>(Logins);
-            if (Tokens != null) obj.Tokens = new List<ImmutableIdentityUserToken<TKey>>(Tokens);
+            if (Tokens != null) obj.Tokens = new List<ImmutableIdentityUserToken>(Tokens);
 
             return obj;
         }

@@ -2,7 +2,7 @@
 
 namespace Aspnet.Identity.Akka.ActorMessages.User
 {
-    class TwoFactorEnabledChanged : IEvent
+    public class TwoFactorEnabledChanged : IEvent
     {
         public TwoFactorEnabledChanged(bool twoFactorEnabled)
         {

@@ -341,7 +341,7 @@ namespace Aspnet.Identity.Akka
             }
 
             var token = await FindTokenAsync(user, loginProvider, name, cancellationToken);
-            if (token != default(ImmutableIdentityUserToken<TKey>))
+            if (token != default(ImmutableIdentityUserToken))
             {
                 user.Tokens.Remove(token);
                 user.Changes.Add(new RemoveToken(loginProvider, name));
@@ -483,12 +483,12 @@ namespace Aspnet.Identity.Akka
         {
             if (user.Tokens == null)
             {
-                var tokens = (await userCoordinator.Ask<IEnumerable<ImmutableIdentityUserToken<TKey>>>(new RequestTokens<TKey>(user.Id), cancellationToken));
-                user.Tokens = tokens as List<ImmutableIdentityUserToken<TKey>> ?? tokens.ToList();
+                var tokens = (await userCoordinator.Ask<IEnumerable<ImmutableIdentityUserToken>>(new RequestTokens<TKey>(user.Id), cancellationToken));
+                user.Tokens = tokens as List<ImmutableIdentityUserToken> ?? tokens.ToList();
             }
         }
 
-        private async Task<ImmutableIdentityUserToken<TKey>> FindTokenAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken)
+        private async Task<ImmutableIdentityUserToken> FindTokenAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken)
         {
             //just to be sure
             await EnsureTokensLoaded(user, cancellationToken);
@@ -512,11 +512,11 @@ namespace Aspnet.Identity.Akka
 
             await EnsureTokensLoaded(user, cancellationToken);
             var token = await FindTokenAsync(user, loginProvider, name, cancellationToken);
-            if (token != default(ImmutableIdentityUserToken<TKey>))
+            if (token != default(ImmutableIdentityUserToken))
             {
                 user.Tokens.Remove(token);
             }
-            user.Tokens.Add(new ImmutableIdentityUserToken<TKey>(user.Id, loginProvider, name, value));
+            user.Tokens.Add(new ImmutableIdentityUserToken(loginProvider, name, value));
             user.Changes.Add(new SetToken(loginProvider, name, value));
         }
 

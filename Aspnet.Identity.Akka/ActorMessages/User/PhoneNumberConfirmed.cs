@@ -2,7 +2,7 @@
 
 namespace Aspnet.Identity.Akka.ActorMessages.User
 {
-    class PhoneNumberConfirmed : IEvent
+    public class PhoneNumberConfirmed : IEvent
     {
         public PhoneNumberConfirmed(bool phoneNumberConfirmed)
         {

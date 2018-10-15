@@ -2,7 +2,7 @@
 
 namespace Aspnet.Identity.Akka.ActorMessages.User
 {
-    class SecurityStampChanged : IEvent
+    public class SecurityStampChanged : IEvent
     {
         public SecurityStampChanged(string stamp)
         {

@@ -2,7 +2,7 @@
 
 namespace Aspnet.Identity.Akka.ActorMessages.User
 {
-    class LockoutEnabledChanged : IEvent
+    public class LockoutEnabledChanged : IEvent
     {
         public LockoutEnabledChanged(bool lockoutEnabled)
         {

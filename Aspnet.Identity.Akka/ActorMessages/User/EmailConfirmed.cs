@@ -2,7 +2,7 @@
 
 namespace Aspnet.Identity.Akka.ActorMessages.User
 {
-    class EmailConfirmed : IEvent
+    public class EmailConfirmed : IEvent
     {
         public EmailConfirmed(bool confirmed)
         {
